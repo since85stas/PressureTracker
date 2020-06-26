@@ -20,4 +20,20 @@ public class MainActivity extends AppCompatActivity {
                     .commitNow();
         }
     }
+
+    /**
+     * adding observers
+     */
+    private void addObservers() {
+
+    }
+
+    /**
+     * removing observers
+     */
+    private void removeObservers() {
+
+    }
+
+
 }
