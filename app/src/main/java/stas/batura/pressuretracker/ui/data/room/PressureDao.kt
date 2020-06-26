@@ -7,10 +7,10 @@ import androidx.room.Query
 import stas.batura.pressuretracker.ui.data.room.Pressure
 
 @Dao
-interface ChatDao {
+interface PressureDao {
 
     @Insert
-    suspend fun insertPressure(pressure: Pressure): Long
+    suspend fun insertPressure(pressure: Pressure)
 
     @Query("SELECT * FROM pressure_table ")
     fun getMessages(): LiveData<List<Pressure>>

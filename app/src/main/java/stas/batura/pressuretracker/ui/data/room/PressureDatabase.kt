@@ -33,12 +33,12 @@ import stas.batura.pressuretracker.ui.data.room.Pressure
  * so you can reuse it.
  */
 @Database(entities =[Pressure::class], version = 1, exportSchema = false)
-abstract class ChatDatabase : RoomDatabase() {
+abstract class PressureDatabase : RoomDatabase() {
 
     /**
      * Connects the database to the DAO.
      */
-    abstract val chatDatabaseDao: ChatDao
+    abstract val pressureDatabaseDao: PressureDao
 
     /**
      * Define a companion object, this allows us to add functions on the SleepDatabase class.
@@ -57,7 +57,7 @@ abstract class ChatDatabase : RoomDatabase() {
          *  thread to shared data are visible to other threads.
          */
         @Volatile
-        private var INSTANCE: ChatDatabase? = null
+        private var INSTANCE: PressureDatabase? = null
 
         /**
          * Helper function to get the database.
@@ -76,7 +76,7 @@ abstract class ChatDatabase : RoomDatabase() {
          *
          * @param context The application context Singleton, used to get access to the filesystem.
          */
-        fun getInstance(context: Context): ChatDatabase {
+        fun getInstance(context: Context): PressureDatabase {
             // Multiple threads can ask for the database at the same time, ensure we only initialize
             // it once by using synchronized. Only one thread may enter a synchronized block at a
             // time.
@@ -103,7 +103,7 @@ abstract class ChatDatabase : RoomDatabase() {
                 if (instance == null) {
                     instance = Room.databaseBuilder(
                             context.applicationContext,
-                            ChatDatabase::class.java,
+                            PressureDatabase::class.java,
                             "lessons_history_database"
                     )
                             // Wipes and rebuilds instead of migrating if no Migration object.
