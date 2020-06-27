@@ -2,7 +2,6 @@ package stas.batura.pressuretracker.ui.main;
 
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Bundle;
 
@@ -15,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.Observable;
-
 import dagger.hilt.android.AndroidEntryPoint;
 import stas.batura.pressuretracker.R;
 
@@ -25,7 +22,7 @@ public class MainFragment extends Fragment {
 
     private static final String TAG = MainFragment.class.getSimpleName();
 
-    private MainViewModel mViewModel;
+    private MainFragmentViewModel fragmentModel;
 
     public static MainFragment newInstance() {
         return new MainFragment();
@@ -36,7 +33,7 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        fragmentModel = new ViewModelProvider(this).get(MainFragmentViewModel.class);
 //        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         return inflater.inflate(R.layout.main_fragment, container, false);
@@ -61,7 +58,7 @@ public class MainFragment extends Fragment {
 
     private void  addObservers() {
 
-        mViewModel.getPressureLive().observe(getViewLifecycleOwner(), new Observer() {
+        fragmentModel.getPressureLive().observe(getViewLifecycleOwner(), new Observer() {
             @Override
             public void onChanged(Object o) {
                 Log.d(TAG, "onChanged: ");

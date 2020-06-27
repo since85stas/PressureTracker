@@ -1,6 +1,8 @@
 package stas.batura.pressuretracker.di
 
 import android.content.Context
+import android.hardware.SensorManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.Room
 import dagger.Component
 import dagger.Module
@@ -25,6 +27,20 @@ class RoomModule {
     @Singleton
     fun providesDatabase(@ApplicationContext appContext: Context): PressureDatabase {
         return PressureDatabase.getInstance(appContext)
+    }
+
+
+}
+
+@Module
+@InstallIn(ApplicationComponent::class)
+class SensorModule {
+
+    @Provides
+    @Singleton
+    fun provideSensorManager(@ApplicationContext appContext: Context): SensorManager {
+        val sensorManager = appContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        return sensorManager
     }
 
 }
