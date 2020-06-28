@@ -9,10 +9,10 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.batura.stat.batchat.repository.room.PressureDao
-import stas.batura.pressuretracker.ui.data.Repository
-import stas.batura.service.PressureService
+import stas.batura.pressuretracker.data.IRep
+import stas.batura.pressuretracker.service.PressureService
 
-class MainViewModel @ViewModelInject constructor(val repository: PressureDao) : ViewModel() {
+class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewModel() {
 
     private val TAG = MainViewModel::class.simpleName
 
@@ -34,9 +34,8 @@ class MainViewModel @ViewModelInject constructor(val repository: PressureDao) : 
             // соединение с сервисом
             serviceConnection.value = object : ServiceConnection {
                 override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                    playerServiceBinder = service as PressureService.PressureServiceBinder
                     try {
-
+                        playerServiceBinder = service as PressureService.PressureServiceBinder
                     } catch (e: RemoteException) {
                         Log.d(TAG, "onServiceConnected: " + e);
                     }

@@ -1,4 +1,4 @@
-package stas.batura.pressuretracker.ui.data.room
+package stas.batura.pressuretracker.data.room
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "pressure_table")
 data class Pressure (
 
-        var pressure: Double = 0.0,
+        var pressure: Float = 0.0F,
 
         var time: Long = 0,
 

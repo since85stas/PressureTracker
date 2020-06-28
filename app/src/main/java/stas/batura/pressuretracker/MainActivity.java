@@ -12,8 +12,7 @@ import android.os.Bundle;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import stas.batura.pressuretracker.ui.main.MainFragment;
-import stas.batura.pressuretracker.ui.main.MainFragmentViewModel;
-import stas.batura.service.PressureService;
+import stas.batura.pressuretracker.service.PressureService;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
@@ -40,6 +39,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         addObservers();
+
+        startService(
+                new Intent(
+                        this,
+                        PressureService.class
+                    )
+                );
     }
 
     @Override

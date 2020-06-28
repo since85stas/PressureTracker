@@ -1,4 +1,4 @@
-package stas.batura.pressuretracker.ui.data
+package stas.batura.pressuretracker.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ru.batura.stat.batchat.repository.room.PressureDao
-import stas.batura.pressuretracker.ui.data.room.Pressure
+import stas.batura.pressuretracker.data.room.Pressure
 import javax.inject.Inject
 
 interface IRep: PressureDao {
@@ -33,9 +33,9 @@ class Repository @Inject constructor(): IRep {
      */
     private val ioScope = CoroutineScope(Dispatchers.IO + repositoryJob)
 
-    @Inject lateinit var pressureData: IRep
+    @Inject lateinit var pressureData: PressureDao
 
-    override suspend fun insertPressure(pressure: Pressure) {
+    override fun insertPressure(pressure: Pressure) {
         ioScope.launch {
             pressureData.insertPressure(pressure)
         }
