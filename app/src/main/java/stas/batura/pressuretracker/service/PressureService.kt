@@ -1,5 +1,9 @@
 package stas.batura.pressuretracker.service
 
+import android.R
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.hardware.Sensor
@@ -7,17 +11,28 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
+import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
+import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
-class PressureService @Inject constructor(): Service (), SensorEventListener {
+class PressureService @Inject constructor(): Service (), SensorEventListener, ChessStateChageListner {
 
     private val TAG = PressureService::class.simpleName
+
+    private val NOTIFICATION_ID = 21
+
+    private val CHANNEL_ID = "PressCh"
+
+    private val INTERVAL = 60L * 2
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -25,6 +40,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener {
 
     private var sensor: Sensor? = null
 
+    private lateinit var chessClockRx: ChessClockRx
 
     override fun onCreate() {
         super.onCreate()
@@ -33,9 +49,11 @@ class PressureService @Inject constructor(): Service (), SensorEventListener {
 
         initPressSensor()
 
-        sensor?.also { light ->
-            sensorManager.registerListener(this, light, 1000000)
-        }
+//        registerListn()
+
+        createClock()
+
+        startForeground(NOTIFICATION_ID, getNotification())
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -52,7 +70,8 @@ class PressureService @Inject constructor(): Service (), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        sensorManager.unregisterListener(this)
+        unregisterListn()
+        stopClock()
     }
 
     private fun initPressSensor() {
@@ -76,7 +95,68 @@ class PressureService @Inject constructor(): Service (), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             val pressure = event.values
-//            savePressureValue(pressure[0])
+            unregisterListn()
+            savePressureValue(pressure[0])
+        }
+    }
+
+    private fun registerListn() {
+        sensor?.also { light ->
+            sensorManager.registerListener(this, light, 100000)
+        }
+    }
+
+    private fun unregisterListn() {
+        sensorManager.unregisterListener(this)
+    }
+
+    private fun createClock() {
+        chessClockRx = ChessClockRx(INTERVAL, this);
+    }
+
+    private fun stopClock() {
+        chessClockRx.stopTimer()
+    }
+
+    override fun timeChange(time: Long) {
+        Log.d(TAG, "timeChange: " + time)
+        if (time == 0L) {
+            registerListn()
+        }
+    }
+
+    override fun timeFinish() {
+        Log.d(TAG, "timeFinish: ")
+        createClock()
+    }
+
+    private fun getNotification(): Notification {
+
+        createNotificationChannel()
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_delete)
+                .setStyle(NotificationCompat.BigTextStyle()
+
+                        .bigText("Much longer text that cannot fit one line..."))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        return builder.build()
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name: CharSequence = "name"
+            val description = "descr"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance)
+            channel.description = description
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
         }
     }
 
@@ -85,4 +165,6 @@ class PressureService @Inject constructor(): Service (), SensorEventListener {
         var isBind: Boolean = false
 
     }
+
+
 }

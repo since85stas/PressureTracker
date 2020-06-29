@@ -29,6 +29,11 @@ android {
     dataBinding {
         enabled = true
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -81,4 +86,11 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hilt_jetpack"
 
     implementation 'com.github.bumptech.glide:glide:4.10.0'
+
+    // RxJava
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.10'
+    implementation 'com.jakewharton.rxbinding:rxbinding:0.4.0'
+    implementation 'com.jakewharton.rxbinding3:rxbinding-core:3.0.0'
+    implementation 'com.jakewharton.rxbinding3:rxbinding-appcompat:3.0.0'
 }

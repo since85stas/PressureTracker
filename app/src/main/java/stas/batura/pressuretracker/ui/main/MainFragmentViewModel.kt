@@ -9,4 +9,9 @@ class MainFragmentViewModel @ViewModelInject constructor(val repository: Pressur
     val pressureLive = repository.getMessages()
 
 
+    fun rainStart() {
+
+
+
+    }
 }

@@ -9,10 +9,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import stas.batura.pressuretracker.ui.main.MainFragment;
 import stas.batura.pressuretracker.service.PressureService;
+
+import static android.widget.Toast.LENGTH_LONG;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(ServiceConnection serviceConnection) {
                 if (serviceConnection != null) {
                     bindCurrentService(serviceConnection);
+                    Toast.makeText(MainActivity.this, "Binding service", LENGTH_LONG).show();
                 }
             }
         });
