@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.ui.main;
 
+import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -21,6 +22,8 @@ import java.util.List;
 import dagger.hilt.android.AndroidEntryPoint;
 import stas.batura.pressuretracker.R;
 import stas.batura.pressuretracker.data.room.Pressure;
+import stas.batura.pressuretracker.data.room.Rain;
+import stas.batura.pressuretracker.databinding.PressureFragmentBinding;
 
 @AndroidEntryPoint
 public class MainFragment extends Fragment {
@@ -33,6 +36,10 @@ public class MainFragment extends Fragment {
 
     private PressureAdapter adapter;
 
+    private RecyclerView recyclerRainView;
+
+    private RainAdapter rainAdapter;
+
     public static MainFragment newInstance() {
         return new MainFragment();
     }
@@ -43,9 +50,15 @@ public class MainFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         fragmentModel = new ViewModelProvider(this).get(MainFragmentViewModel.class);
-//        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
-        return inflater.inflate(R.layout.pressure_fragment, container, false);
+        PressureFragmentBinding binding = DataBindingUtil.inflate(inflater,
+                R.layout.pressure_fragment,
+                container,
+                false);
+        binding.setViewModel(fragmentModel);
+        binding.setLifecycleOwner(getViewLifecycleOwner());
+
+        return binding.getRoot();
     }
 
     @Override
@@ -64,13 +77,18 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         LinearLayoutManager viewManager = new LinearLayoutManager(requireContext());
+        LinearLayoutManager viewManagerR = new LinearLayoutManager(requireContext());
 
         recyclerView = (RecyclerView) view.findViewById(R.id.pressure_recycle);
         recyclerView.setLayoutManager(viewManager);
 
-        adapter = new PressureAdapter();
-        recyclerView.setAdapter(adapter);
+        recyclerRainView = (RecyclerView) view.findViewById(R.id.rain_recycle);
+        recyclerRainView.setLayoutManager(viewManagerR);
 
+        adapter = new PressureAdapter();
+        rainAdapter = new RainAdapter();
+        recyclerView.setAdapter(adapter);
+        recyclerRainView.setAdapter(rainAdapter);
     }
 
     private void  addObservers() {
@@ -80,6 +98,13 @@ public class MainFragment extends Fragment {
             public void onChanged(Object o) {
                 Log.d(TAG, "onChanged: " );
                 adapter.submitList((List<Pressure>) o);
+            }
+        });
+
+        fragmentModel.getRainLive().observe(getViewLifecycleOwner(), new Observer<List<Rain>>() {
+            @Override
+            public void onChanged(List<Rain> rain) {
+                rainAdapter.submitList(rain);
             }
         });
     }

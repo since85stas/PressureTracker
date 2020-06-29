@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(ServiceConnection serviceConnection) {
                 if (serviceConnection != null) {
                     bindCurrentService(serviceConnection);
-                    Toast.makeText(MainActivity.this, "Binding service", LENGTH_LONG).show();
+//                    Toast.makeText(MainActivity.this, "Binding service", LENGTH_LONG).show();
                 }
             }
         });

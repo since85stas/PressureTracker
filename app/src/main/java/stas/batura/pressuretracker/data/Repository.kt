@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ru.batura.stat.batchat.repository.room.PressureDao
 import stas.batura.pressuretracker.data.room.Pressure
+import stas.batura.pressuretracker.data.room.Rain
 import javax.inject.Inject
 
 interface IRep: PressureDao {
@@ -43,5 +44,15 @@ class Repository @Inject constructor(): IRep {
 
     override fun getMessages(): LiveData<List<Pressure>> {
         return pressureData.getMessages()
+    }
+
+    override fun insertRain(rain: Rain) {
+        ioScope.launch {
+            pressureData.insertRain(rain)
+        }
+    }
+
+    override fun getRainList(): LiveData<List<Rain>> {
+        return pressureData.getRainList()
     }
 }

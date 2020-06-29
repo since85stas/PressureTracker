@@ -23,6 +23,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import stas.batura.pressuretracker.data.room.Pressure
+import stas.batura.pressuretracker.data.room.Rain
 
 
 /**
@@ -32,7 +33,7 @@ import stas.batura.pressuretracker.data.room.Pressure
  * This pattern is pretty much the same for any database,
  * so you can reuse it.
  */
-@Database(entities =[Pressure::class], version = 1, exportSchema = false)
+@Database(entities =[Pressure::class, Rain::class], version = 1, exportSchema = false)
 abstract class PressureDatabase : RoomDatabase() {
 
     /**

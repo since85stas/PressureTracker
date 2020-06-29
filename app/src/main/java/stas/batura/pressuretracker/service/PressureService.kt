@@ -14,6 +14,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
@@ -32,7 +33,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     private val CHANNEL_ID = "PressCh"
 
-    private val INTERVAL = 60L * 2
+    private val INTERVAL = 60L * 1
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -76,9 +77,11 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     private fun initPressSensor() {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
-            val gravSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_PRESSURE)
+            val gravSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
             // Use the version 3 gravity sensor.
             sensor = gravSensors.firstOrNull()
+        } else {
+            Toast.makeText(applicationContext, "Sensor not detected", Toast.LENGTH_LONG).show()
         }
 
     }
@@ -135,10 +138,9 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         createNotificationChannel()
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_delete)
+                .setSmallIcon(R.drawable.ic_media_play)
                 .setStyle(NotificationCompat.BigTextStyle()
-
-                        .bigText("Much longer text that cannot fit one line..."))
+                        .bigText("Collecting pressure..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         return builder.build()

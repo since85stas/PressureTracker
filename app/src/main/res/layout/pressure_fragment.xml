@@ -9,11 +9,13 @@
             type="stas.batura.pressuretracker.ui.main.MainFragmentViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainFragment">
+        tools:context=".ui.main.MainFragment"
+        android:orientation="vertical"
+        >
 
         <LinearLayout
             android:id="@+id/linear_conta"
@@ -21,37 +23,59 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_gravity="center"
             >
             <Button
                 android:id="@+id/start_rain_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:text="start"
+                android:text="start rain"
                 android:layout_margin="12dp"
+                android:onClick="@{() -> viewModel.rainStart() }"
                 />
 
             <Button
                 android:id="@+id/stop_rain_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:text="stop"
+                android:text="stop rain"
                 android:layout_margin="12dp"
+                android:onClick="@{() -> viewModel.rainStop() }"
                 />
 
         </LinearLayout>
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/pressure_recycle"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/linear_conta" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/pressure_recycle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                 />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rain_recycle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                 />
+        </LinearLayout>
+
+
+        <Button
+            android:layout_gravity="center"
+            android:id="@+id/stop_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop service"
+            android:layout_margin="12dp"
+            android:onClick="@{() -> viewModel.rainStop() }"
+            />
+
+    </LinearLayout>
 </layout>
