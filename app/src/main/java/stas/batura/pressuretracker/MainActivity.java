@@ -57,6 +57,16 @@ public class MainActivity extends AppCompatActivity {
         removeObservers();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mainViewModel.getServiceConnection().getValue() != null) {
+
+            // unbinding service after destroing activity
+            unbindService(mainViewModel.getServiceConnection().getValue());
+        }
+    }
+
     /**
      * adding observers
      */
@@ -72,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mainViewModel.getStopServiceLive().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean && mainViewModel.getServiceConnection().getValue() != null) {
+                    unbindService(mainViewModel.getServiceConnection().getValue());
+
+                    mainViewModel.closeService();
+                }
+            }
+        });
     }
 
     /**
@@ -79,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void removeObservers() {
         mainViewModel.getServiceConnection().removeObservers(this);
+        mainViewModel.getStopServiceLive().removeObservers(this);
     }
 
     /**

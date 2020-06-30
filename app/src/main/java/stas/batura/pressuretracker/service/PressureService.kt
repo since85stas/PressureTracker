@@ -1,10 +1,7 @@
 package stas.batura.pressuretracker.service
 
 import android.R
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.app.*
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -19,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
+import stas.batura.pressuretracker.MainActivity
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
 import javax.inject.Inject
@@ -33,7 +31,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     private val CHANNEL_ID = "PressCh"
 
-    private val INTERVAL = 60L * 1
+    private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -75,9 +73,12 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         stopClock()
     }
 
+    /**
+     * initianing a sensor manager
+     */
     private fun initPressSensor() {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
-            val gravSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
+            val gravSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_PRESSURE)
             // Use the version 3 gravity sensor.
             sensor = gravSensors.firstOrNull()
         } else {
@@ -86,6 +87,9 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     }
 
+    /**
+     * saving value in DB
+     */
     private fun savePressureValue(pressure: Float) {
         val roomPre = Pressure(pressure, System.currentTimeMillis())
         Log.d(TAG, "savePressureValue: " + pressure)
@@ -95,6 +99,9 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
+    /**
+     * getting a value from sensor
+     */
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             val pressure = event.values
@@ -103,24 +110,39 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         }
     }
 
+    /**
+     * registring from sensor
+     */
     private fun registerListn() {
         sensor?.also { light ->
             sensorManager.registerListener(this, light, 100000)
         }
     }
 
+    /**
+     * unregistring from sensor
+     */
     private fun unregisterListn() {
         sensorManager.unregisterListener(this)
     }
 
+    /**
+     * creates a new clock object
+     */
     private fun createClock() {
         chessClockRx = ChessClockRx(INTERVAL, this);
     }
 
+    /**
+     * stoping clock fun
+     */
     private fun stopClock() {
         chessClockRx.stopTimer()
     }
 
+    /**
+     * recieving a time from clock
+     */
     override fun timeChange(time: Long) {
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
@@ -128,24 +150,41 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         }
     }
 
+    /**
+     * finshing a time period
+     */
     override fun timeFinish() {
         Log.d(TAG, "timeFinish: ")
         createClock()
     }
 
+    /**
+     * create a Notification object
+     */
     private fun getNotification(): Notification {
 
         createNotificationChannel()
+
+        val notifyIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val notifyPendingIntent = PendingIntent.getActivity(
+                this, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_media_play)
                 .setStyle(NotificationCompat.BigTextStyle()
                         .bigText("Collecting pressure..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(notifyPendingIntent)
 
         return builder.build()
     }
 
+    /**
+     * create a notification chanel
+     */
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -162,11 +201,22 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         }
     }
 
+    /**
+     * create a service binder
+     */
     inner class PressureServiceBinder : Binder() {
 
         var isBind: Boolean = false
 
+        fun closeService() {
+            this@PressureService.stopService()
+        }
+
     }
 
+    fun stopService() {
+
+        stopSelf()
+    }
 
 }

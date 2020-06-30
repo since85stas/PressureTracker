@@ -33,7 +33,7 @@ import stas.batura.pressuretracker.data.room.Rain
  * This pattern is pretty much the same for any database,
  * so you can reuse it.
  */
-@Database(entities =[Pressure::class, Rain::class], version = 1, exportSchema = false)
+@Database(entities =[Pressure::class, Rain::class], version = 2, exportSchema = false)
 abstract class PressureDatabase : RoomDatabase() {
 
     /**

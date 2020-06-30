@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:text="0"
             pressureTextBind="@{pressure}"
+            android:layout_marginStart="24dp"
             android:layout_marginEnd="12dp"
             />
 

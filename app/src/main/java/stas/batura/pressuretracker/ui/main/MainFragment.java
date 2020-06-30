@@ -16,10 +16,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import stas.batura.pressuretracker.MainViewModel;
 import stas.batura.pressuretracker.R;
 import stas.batura.pressuretracker.data.room.Pressure;
 import stas.batura.pressuretracker.data.room.Rain;
@@ -32,6 +34,8 @@ public class MainFragment extends Fragment {
 
     private MainFragmentViewModel fragmentModel;
 
+    private MainViewModel mainViewModel;
+
     private RecyclerView recyclerView;
 
     private PressureAdapter adapter;
@@ -39,6 +43,8 @@ public class MainFragment extends Fragment {
     private RecyclerView recyclerRainView;
 
     private RainAdapter rainAdapter;
+
+    private Button stopButton;
 
     public static MainFragment newInstance() {
         return new MainFragment();
@@ -50,6 +56,8 @@ public class MainFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         fragmentModel = new ViewModelProvider(this).get(MainFragmentViewModel.class);
+
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         PressureFragmentBinding binding = DataBindingUtil.inflate(inflater,
                 R.layout.pressure_fragment,
@@ -89,8 +97,19 @@ public class MainFragment extends Fragment {
         rainAdapter = new RainAdapter();
         recyclerView.setAdapter(adapter);
         recyclerRainView.setAdapter(rainAdapter);
+
+        stopButton = view.findViewById(R.id.stop_button);
+
+        stopButton.setOnClickListener(v -> {
+
+            mainViewModel.stopService();
+//            mainViewModel.closeService();
+        });
     }
 
+    /**
+     * adding observers
+     */
     private void  addObservers() {
 
         fragmentModel.getPressureLive().observe(getViewLifecycleOwner(), new Observer() {
@@ -109,6 +128,9 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * removing observers
+     */
     private void removeObservers() {
 
 

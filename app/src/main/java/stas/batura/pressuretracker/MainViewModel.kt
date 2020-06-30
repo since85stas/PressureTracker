@@ -6,6 +6,7 @@ import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.batura.stat.batchat.repository.room.PressureDao
@@ -19,6 +20,10 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
     var serviceConnection: MutableLiveData<ServiceConnection?> = MutableLiveData()
 
     private var playerServiceBinder: PressureService.PressureServiceBinder? = null
+
+    private var _stopServiceLive: MutableLiveData<Boolean> = MutableLiveData(false)
+    val stopServiceLive: LiveData<Boolean>
+        get() = _stopServiceLive
 
     init {
         createService()
@@ -48,6 +53,23 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
 
         }
 
+    }
+
+    /**
+     * closing service through a Binder, after we unbinding it
+     */
+    fun closeService() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.closeService()
+        }
+        _stopServiceLive.value = false
+    }
+
+    /**
+     * sending command to unbind and close service
+     */
+    fun stopService() {
+        _stopServiceLive.value = true
     }
 
 }

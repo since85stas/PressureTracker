@@ -12,11 +12,17 @@ class MainFragmentViewModel @ViewModelInject constructor(val repository: IRep) :
 
     val rainLive = repository.getRainList()
 
+    /**
+     * writing srtart rain info
+     */
     fun rainStart() {
         val rain = Rain(isStarted = true, isEnded = false, time = System.currentTimeMillis())
         repository.insertRain(rain)
     }
 
+    /**
+     * writing stop rain info
+     */
     fun rainStop() {
         val rain = Rain(false, isEnded = true, time = System.currentTimeMillis())
         repository.insertRain(rain)
