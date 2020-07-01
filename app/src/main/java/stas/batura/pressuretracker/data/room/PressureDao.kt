@@ -16,9 +16,22 @@ interface PressureDao {
     @Query("SELECT * FROM pressure_table ")
     fun getMessages(): LiveData<List<Pressure>>
 
+//    @Insert
+//    fun insertRain(rain: Rain)
+//
+//    @Query("SELECT * FROM rain_table")
+//    fun getRainList(): LiveData<List<Rain>>
+
+//    @Query("SELECT *FROM rain_table ORDER BY _id DESC LIMIT 1 ")
+//    fun lastRain(): LiveData<Rain?>
+
+    @Query("UPDATE rain_table SET lastPowr= :power")
+    fun setLastRainPower(power: Int)
+
+    @Query("SELECT * FROM rain_table LIMIT 1")
+    fun getRainPower(): LiveData<Rain>
+
     @Insert
     fun insertRain(rain: Rain)
 
-    @Query("SELECT * FROM rain_table")
-    fun getRainList(): LiveData<List<Rain>>
 }

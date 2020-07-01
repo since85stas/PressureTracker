@@ -28,6 +28,13 @@
             android:layout_height="wrap_content"
             android:text="today"
             timeBind="@{pressure}"
+            android:layout_marginEnd="12dp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            rainPowBind="@{pressure}"
             />
 
     </LinearLayout>

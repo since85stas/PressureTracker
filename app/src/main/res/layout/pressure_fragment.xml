@@ -18,33 +18,47 @@
         android:gravity="center"
         >
 
-        <LinearLayout
-            android:id="@+id/linear_conta"
+        <RadioGroup
+            android:id="@+id/radio_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_gravity="center"
+
             >
-            <Button
-                android:id="@+id/start_rain_button"
+            <RadioButton
+                android:id="@+id/rain_0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="start rain"
+                android:text="No"
                 android:layout_margin="12dp"
-                android:onClick="@{() -> viewModel.rainStart() }"
                 />
 
-            <Button
-                android:id="@+id/stop_rain_button"
+            <RadioButton
+                android:id="@+id/rain_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="stop rain"
+                android:text="1"
                 android:layout_margin="12dp"
-                android:onClick="@{() -> viewModel.rainStop() }"
                 />
 
-        </LinearLayout>
+            <RadioButton
+                android:id="@+id/rain_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2"
+                android:layout_margin="12dp"
+                />
+
+            <RadioButton
+                android:id="@+id/rain_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3"
+                android:layout_margin="12dp"
+                />
+
+
+        </RadioGroup>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,6 +66,7 @@
             android:layout_weight="1"
             android:orientation="horizontal"
             >
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/pressure_recycle"
                 android:layout_width="0dp"
@@ -59,12 +74,12 @@
                 android:layout_height="match_parent"
                  />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rain_recycle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                 />
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/rain_recycle"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_height="match_parent"-->
+<!--                 />-->
         </LinearLayout>
 
 

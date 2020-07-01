@@ -72,4 +72,10 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
         _stopServiceLive.value = true
     }
 
+    fun setServiceRain(rainp: Int) {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.setRainPower(rainp)
+        }
+    }
+
 }

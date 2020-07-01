@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioGroup;
 
 import java.util.List;
 
@@ -40,9 +41,9 @@ public class MainFragment extends Fragment {
 
     private PressureAdapter adapter;
 
-    private RecyclerView recyclerRainView;
-
-    private RainAdapter rainAdapter;
+//    private RecyclerView recyclerRainView;
+//
+//    private RainAdapter rainAdapter;
 
     private Button stopButton;
 
@@ -85,25 +86,47 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         LinearLayoutManager viewManager = new LinearLayoutManager(requireContext());
-        LinearLayoutManager viewManagerR = new LinearLayoutManager(requireContext());
+//        LinearLayoutManager viewManagerR = new LinearLayoutManager(requireContext());
 
         recyclerView = (RecyclerView) view.findViewById(R.id.pressure_recycle);
         recyclerView.setLayoutManager(viewManager);
 
-        recyclerRainView = (RecyclerView) view.findViewById(R.id.rain_recycle);
-        recyclerRainView.setLayoutManager(viewManagerR);
-
         adapter = new PressureAdapter();
-        rainAdapter = new RainAdapter();
         recyclerView.setAdapter(adapter);
-        recyclerRainView.setAdapter(rainAdapter);
 
         stopButton = view.findViewById(R.id.stop_button);
 
         stopButton.setOnClickListener(v -> {
-
             mainViewModel.stopService();
-//            mainViewModel.closeService();
+        });
+
+        RadioGroup radioGroup = view.findViewById(R.id.radio_group);
+
+        radioGroup.getChildAt(mainViewModel.getPowerFromServ()).setActivated(true);
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+
+                    case R.id.rain_0:
+                        mainViewModel.setServiceRain(0);
+                        break;
+
+                    case R.id.rain_1:
+                        mainViewModel.setServiceRain(1);
+                        break;
+
+                    case R.id.rain_2:
+                        mainViewModel.setServiceRain(2);
+                        break;
+
+                    case R.id.rain_3:
+                        mainViewModel.setServiceRain(3);
+                        break;
+                }
+
+            }
         });
     }
 
@@ -120,12 +143,13 @@ public class MainFragment extends Fragment {
             }
         });
 
-        fragmentModel.getRainLive().observe(getViewLifecycleOwner(), new Observer<List<Rain>>() {
-            @Override
-            public void onChanged(List<Rain> rain) {
-                rainAdapter.submitList(rain);
-            }
-        });
+//        fragmentModel.getRainLive().observe(getViewLifecycleOwner(), new Observer<List<Rain>>() {
+//            @Override
+//            public void onChanged(List<Rain> rain) {
+//                rainAdapter.submitList(rain);
+//            }
+//        });
+
     }
 
     /**

@@ -41,6 +41,8 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     private lateinit var chessClockRx: ChessClockRx
 
+    var lastRainPow: Int = 0
+
     override fun onCreate() {
         super.onCreate()
         val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
@@ -91,7 +93,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
      * saving value in DB
      */
     private fun savePressureValue(pressure: Float) {
-        val roomPre = Pressure(pressure, System.currentTimeMillis())
+        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastRainPow)
         Log.d(TAG, "savePressureValue: " + pressure)
         repository.insertPressure(roomPre)
     }
@@ -208,14 +210,21 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
         var isBind: Boolean = false
 
+        fun setRainPower(rainpower: Int) {
+            this@PressureService.lastRainPow = rainpower
+        }
+
         fun closeService() {
             this@PressureService.stopService()
+        }
+
+        fun getRainPower() : Int {
+            return this@PressureService.lastRainPow
         }
 
     }
 
     fun stopService() {
-
         stopSelf()
     }
 

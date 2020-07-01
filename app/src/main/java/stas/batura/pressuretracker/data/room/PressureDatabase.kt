@@ -24,6 +24,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.data.room.Rain
+import java.util.concurrent.Executors
 
 
 /**
@@ -33,7 +34,7 @@ import stas.batura.pressuretracker.data.room.Rain
  * This pattern is pretty much the same for any database,
  * so you can reuse it.
  */
-@Database(entities =[Pressure::class, Rain::class], version = 2, exportSchema = false)
+@Database(entities =[Pressure::class], version = 3, exportSchema = false)
 abstract class PressureDatabase : RoomDatabase() {
 
     /**
@@ -85,6 +86,9 @@ abstract class PressureDatabase : RoomDatabase() {
                 val rdc: Callback = object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         Log.d("room","dab created")
+                        val rain = Rain(0)
+                        Executors.newSingleThreadScheduledExecutor()
+                                .execute(Runnable { INSTANCE!!.pressureDatabaseDao.insertRain(rain)})
                     }
 
                     override fun onDestructiveMigration(db: SupportSQLiteDatabase) {

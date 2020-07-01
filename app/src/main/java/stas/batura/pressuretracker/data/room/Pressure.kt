@@ -10,8 +10,12 @@ data class Pressure (
 
         var time: Long = 0,
 
+        var rainPower: Int = 0,
+
         @PrimaryKey(autoGenerate = true)
         var pressureId: Long = 0L
+
+
 )
 
 {

@@ -10,14 +10,16 @@ class MainFragmentViewModel @ViewModelInject constructor(val repository: IRep) :
 
     val pressureLive = repository.getMessages()
 
-    val rainLive = repository.getRainList()
+//    val rainLive = repository.getRainList()
+//
+//    val lastRain = repository.lastRain()
 
     /**
      * writing srtart rain info
      */
     fun rainStart() {
         val rain = Rain(isStarted = true, isEnded = false, time = System.currentTimeMillis())
-        repository.insertRain(rain)
+//        repository.insertRain(rain)
     }
 
     /**
@@ -25,7 +27,7 @@ class MainFragmentViewModel @ViewModelInject constructor(val repository: IRep) :
      */
     fun rainStop() {
         val rain = Rain(false, isEnded = true, time = System.currentTimeMillis())
-        repository.insertRain(rain)
+//        repository.insertRain(rain)
     }
 
 

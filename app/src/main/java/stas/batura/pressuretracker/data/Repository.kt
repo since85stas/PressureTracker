@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.data
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -46,13 +47,31 @@ class Repository @Inject constructor(): IRep {
         return pressureData.getMessages()
     }
 
-    override fun insertRain(rain: Rain) {
+    override fun setLastRainPower(power: Int) {
         ioScope.launch {
-            pressureData.insertRain(rain)
+            pressureData.setLastRainPower(power)
         }
     }
 
-    override fun getRainList(): LiveData<List<Rain>> {
-        return pressureData.getRainList()
+    override fun getRainPower(): LiveData<Rain> {
+        return pressureData.getRainPower()
     }
+
+    override fun insertRain(rain: Rain) {
+        Log.d("ins","ins")
+    }
+
+    //    override fun insertRain(rain: Rain) {
+//        ioScope.launch {
+//            pressureData.insertRain(rain)
+//        }
+//    }
+//
+//    override fun getRainList(): LiveData<List<Rain>> {
+//        return pressureData.getRainList()
+//    }
+//
+//    override fun lastRain(): LiveData<Rain?> {
+//        return pressureData.lastRain()
+//    }
 }

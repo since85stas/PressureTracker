@@ -6,12 +6,9 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "rain_table")
 data class Rain (
 
-        var isStarted: Boolean = false,
+        var lastPowr: Int = 0,
 
-        var isEnded: Boolean = false,
+        @PrimaryKey
+        var _id: Long = 0L
 
-        var time: Long = 0L,
-
-        @PrimaryKey(autoGenerate = true)
-        var _id: Long = 0
 )
