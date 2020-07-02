@@ -3,15 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/graphFragment"
+    app:startDestination="@id/listFragment"
     >
-
 
     <fragment
         android:id="@+id/graphFragment"
         android:name="stas.batura.pressuretracker.ui.graph.GraphFragment"
         android:label="control_fragment"
         tools:layout="@layout/graph_fragment" >
+        <action
+            android:id="@+id/action_graphFragment_to_listFragment"
+            app:destination="@id/listFragment" />
     </fragment>
 
 
@@ -21,6 +23,9 @@
         android:label="PlaylistFragment"
         tools:layout="@layout/pressure_fragment"
         >
+        <action
+            android:id="@+id/action_listFragment_to_graphFragment"
+            app:destination="@id/graphFragment" />
     </fragment>
 
 

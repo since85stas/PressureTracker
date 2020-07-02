@@ -9,6 +9,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -138,6 +140,17 @@ public class MainFragment extends Fragment {
 
             }
         });
+
+        Button graph_but = view.findViewById(R.id.pres_to_graph);
+
+        graph_but.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Navigation.findNavController(v).navigate(R.id.action_listFragment_to_graphFragment);
+
+            }
+        });
     }
 
     private void  checkedradio() {
@@ -170,6 +183,10 @@ public class MainFragment extends Fragment {
 //                rainAdapter.submitList(rain);
 //            }
 //        });
+
+    }
+
+    private void movetoGraphFragm() {
 
     }
 

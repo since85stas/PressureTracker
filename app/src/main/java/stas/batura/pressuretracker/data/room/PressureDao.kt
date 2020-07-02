@@ -13,7 +13,7 @@ interface PressureDao {
     @Insert
     fun insertPressure(pressure: Pressure)
 
-    @Query("SELECT * FROM pressure_table ")
+    @Query("SELECT * FROM pressure_table ORDER BY pressureId")
     fun getPressures(): LiveData<List<Pressure>>
 
 //    @Insert

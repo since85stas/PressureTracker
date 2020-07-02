@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="stas.batura.pressuretracker.ui.main.MainFragmentViewModel" />
@@ -13,84 +14,90 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainFragment"
-        android:orientation="vertical"
         android:gravity="center"
-        >
+        android:orientation="vertical"
+        tools:context=".ui.main.MainFragment">
 
-        <RadioGroup
-            android:id="@+id/radio_group"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="horizontal">
 
-            >
-            <RadioButton
-                android:id="@+id/rain_0"
+
+            <RadioGroup
+                android:id="@+id/radio_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No"
-                android:layout_margin="12dp"
-                />
+                android:orientation="horizontal"
+                android:layout_marginEnd="24dp"
+                >
 
-            <RadioButton
-                android:id="@+id/rain_1"
+                <RadioButton
+                    android:id="@+id/rain_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:text="No" />
+
+                <RadioButton
+                    android:id="@+id/rain_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:text="1" />
+
+                <RadioButton
+                    android:id="@+id/rain_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:text="2" />
+
+                <RadioButton
+                    android:id="@+id/rain_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:text="3" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/pres_to_graph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1"
-                android:layout_margin="12dp"
+                android:text="graph"
                 />
 
-            <RadioButton
-                android:id="@+id/rain_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2"
-                android:layout_margin="12dp"
-                />
-
-            <RadioButton
-                android:id="@+id/rain_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3"
-                android:layout_margin="12dp"
-                />
-
-
-        </RadioGroup>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            >
+            android:orientation="horizontal">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/pressure_recycle"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="match_parent"
-                 />
+                android:layout_weight="1" />
 
-<!--            <androidx.recyclerview.widget.RecyclerView-->
-<!--                android:id="@+id/rain_recycle"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_weight="1"-->
-<!--                android:layout_height="match_parent"-->
-<!--                 />-->
+            <!--            <androidx.recyclerview.widget.RecyclerView-->
+            <!--                android:id="@+id/rain_recycle"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:layout_weight="1"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                 />-->
         </LinearLayout>
 
 
         <Button
-            android:layout_gravity="center"
             android:id="@+id/stop_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="stop service"
+            android:layout_gravity="center"
             android:layout_margin="12dp"
-            />
+            android:text="stop service" />
 
     </LinearLayout>
 </layout>

@@ -12,10 +12,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/graph_to_list"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Test" />
+            android:text="list"
+            android:layout_margin="12dp"
+            android:layout_gravity="center"
+            />
+
+        <com.jjoe64.graphview.GraphView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/graph" />
 
     </LinearLayout>
 </layout>
