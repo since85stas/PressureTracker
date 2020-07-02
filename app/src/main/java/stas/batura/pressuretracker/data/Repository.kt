@@ -3,17 +3,18 @@ package stas.batura.pressuretracker.data
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import ru.batura.stat.batchat.repository.room.PressureDao
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.data.room.Rain
 import javax.inject.Inject
 
-interface IRep: PressureDao {
+interface IRep: PressureDao, IDop {
 
+}
+
+interface IDop {
+    fun getRainPow(): Rain
 }
 
 class Repository @Inject constructor(): IRep {
@@ -53,8 +54,22 @@ class Repository @Inject constructor(): IRep {
         }
     }
 
-    override fun getRainPower(): LiveData<Rain> {
-        return pressureData.getRainPower()
+    override fun getRainPower(): Rain {
+        var result: Rain = Rain(0)
+        runBlocking {
+            ioScope.async {
+                result = pressureData.getRainPower()
+            }.await()
+        }
+        return result
+
+    }
+
+    override fun getRainPow(): Rain {
+        val block = runBlocking {
+            getRainPow()
+        }
+        return block
     }
 
     override fun insertRain(rain: Rain) {

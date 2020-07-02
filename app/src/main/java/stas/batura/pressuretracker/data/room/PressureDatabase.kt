@@ -34,7 +34,7 @@ import java.util.concurrent.Executors
  * This pattern is pretty much the same for any database,
  * so you can reuse it.
  */
-@Database(entities =[Pressure::class], version = 3, exportSchema = false)
+@Database(entities =[Pressure::class, Rain::class], version = 4, exportSchema = false)
 abstract class PressureDatabase : RoomDatabase() {
 
     /**

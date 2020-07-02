@@ -13,12 +13,14 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.MutableLiveData
 import dagger.hilt.android.AndroidEntryPoint
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.MainActivity
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
+import stas.batura.pressuretracker.data.room.Rain
 import javax.inject.Inject
 
 
@@ -41,7 +43,9 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     private lateinit var chessClockRx: ChessClockRx
 
-    var lastRainPow: Int = 0
+    private var lastPower: Int = 0
+
+//    var lastRainPow: Int = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -55,6 +59,8 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         createClock()
 
         startForeground(NOTIFICATION_ID, getNotification())
+
+        lastPower = repository.getRainPower().lastPowr
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -93,7 +99,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
      * saving value in DB
      */
     private fun savePressureValue(pressure: Float) {
-        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastRainPow)
+        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastPower)
         Log.d(TAG, "savePressureValue: " + pressure)
         repository.insertPressure(roomPre)
     }
@@ -211,7 +217,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         var isBind: Boolean = false
 
         fun setRainPower(rainpower: Int) {
-            this@PressureService.lastRainPow = rainpower
+            this@PressureService.lastPower = rainpower
         }
 
         fun closeService() {
@@ -219,7 +225,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         }
 
         fun getRainPower() : Int {
-            return this@PressureService.lastRainPow
+            return this@PressureService.lastPower
         }
 
     }

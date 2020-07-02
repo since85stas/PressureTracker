@@ -29,7 +29,7 @@ interface PressureDao {
     fun setLastRainPower(power: Int)
 
     @Query("SELECT * FROM rain_table LIMIT 1")
-    fun getRainPower(): LiveData<Rain>
+    fun getRainPower(): Rain
 
     @Insert
     fun insertRain(rain: Rain)
