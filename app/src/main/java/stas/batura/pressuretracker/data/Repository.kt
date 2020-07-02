@@ -44,8 +44,8 @@ class Repository @Inject constructor(): IRep {
         }
     }
 
-    override fun getMessages(): LiveData<List<Pressure>> {
-        return pressureData.getMessages()
+    override fun getPressures(): LiveData<List<Pressure>> {
+        return pressureData.getPressures()
     }
 
     override fun setLastRainPower(power: Int) {

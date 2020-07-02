@@ -14,7 +14,7 @@ interface PressureDao {
     fun insertPressure(pressure: Pressure)
 
     @Query("SELECT * FROM pressure_table ")
-    fun getMessages(): LiveData<List<Pressure>>
+    fun getPressures(): LiveData<List<Pressure>>
 
 //    @Insert
 //    fun insertRain(rain: Rain)
