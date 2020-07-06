@@ -15,21 +15,36 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.MainActivity
 import stas.batura.pressuretracker.R
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
+import stas.batura.pressuretracker.utils.getCurrentDayBegin
+import stas.batura.pressuretracker.utils.getCurrentDayEnd
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.util.*
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class PressureService @Inject constructor(): LifecycleService(), SensorEventListener, ChessStateChageListner {
+
+    /**
+     * Job allows us to cancel all coroutines started by this ViewModel.
+     */
+    private var serviceJob = Job()
+
+    /**
+     * A [CoroutineScope] keeps track of all coroutines started by this Service.
+     */
+    private val ioScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
     private val TAG = PressureService::class.simpleName
 
@@ -37,24 +52,31 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private val CHANNEL_ID = "PressCh"
 
+    // interval between saves in milliseconds
     private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
     @Inject lateinit var repository: IRep
 
+    // pressure sensor installed
     private var sensor: Sensor? = null
 
+    // chess instance to calculate distance before saves
     private lateinit var chessClockRx: ChessClockRx
 
+    // last rain power
     private var lastPower: Int = 0
 
-//    var lastRainPow: Int = 0
+    // begin of last day date
+    private lateinit var lastDayBegin: Calendar
 
     override fun onCreate() {
         super.onCreate()
         val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
         Log.d(TAG, "onCreate: " + deviceSensors.toString())
+
+        lastDayBegin = getCurrentDayBegin()
 
         initPressSensor()
 
@@ -66,9 +88,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
         lastPower = repository.getRainPower().lastPowr
 
-        repository.getPressures().observe( this, Observer {
 
-        })
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -171,6 +191,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
             registerListn()
+
+            if (checkNextDay()) {
+                addObservers()
+            }
         }
     }
 
@@ -206,6 +230,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         return builder.build()
     }
 
+    /**
+     * get notif icon ID
+     */
     private fun getIconId(): Int {
         when (lastPower) {
             0 -> return R.drawable.icon_0
@@ -218,13 +245,13 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         return R.drawable.icon_0
     }
 
-
+    /**
+     * updating notific icons
+     */
     private fun updateNotification() {
-
         val notification = getNotification()
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
             as NotificationManager
-
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
@@ -273,12 +300,37 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     }
 
+    /**
+     * stopping service
+     */
     fun stopService() {
         stopSelf()
     }
 
-    private fun createTxtFile(): FileWriter? {
-        val fileName = "GoodNotes.txt"
+    fun addObservers() {
+        repository.getPressuresInInterval(lastDayBegin.timeInMillis,
+                getCurrentDayEnd(lastDayBegin).timeInMillis)
+                .observe( this, Observer {
+                    Log.d(TAG, "addObservers: getting day pressure")
+                    ioScope.launch {
+                        writeDataToFile(createTxtFile(lastDayBegin.toString()), it)
+                }
+        })
+    }
+
+    fun removeObservers() {
+//        repository.getPressuresInInterval().removeObservers(this)
+    }
+
+    private fun checkNextDay(): Boolean {
+        return Calendar.getInstance().after(getCurrentDayEnd())
+    }
+
+    private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
+        Log.d(TAG, "writeDataToFile: ")
+    }
+
+    private fun createTxtFile(fileName: String): FileWriter? {
         return try {
             FileWriter(File("sdcard/$fileName"))
         } catch (e: IOException) {
