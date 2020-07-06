@@ -1,7 +1,7 @@
 package stas.batura.pressuretracker.service
 
-import android.R
 import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -13,19 +13,23 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.MainActivity
+import stas.batura.pressuretracker.R
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
-import stas.batura.pressuretracker.data.room.Rain
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class PressureService @Inject constructor(): Service (), SensorEventListener, ChessStateChageListner {
+class PressureService @Inject constructor(): LifecycleService(), SensorEventListener, ChessStateChageListner {
 
     private val TAG = PressureService::class.simpleName
 
@@ -61,13 +65,25 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         startForeground(NOTIFICATION_ID, getNotification())
 
         lastPower = repository.getRainPower().lastPowr
+
+        repository.getPressures().observe( this, Observer {
+
+        })
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        Log.d(TAG, "servise is bind " + intent.toString())
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
+                Log.d(TAG, "servise is bind " + intent.toString())
         this.PressureServiceBinder().isBind = true
         return PressureServiceBinder()
     }
+
+
+    //    override fun onBind(intent: Intent?): IBinder? {
+//        Log.d(TAG, "servise is bind " + intent.toString())
+//        this.PressureServiceBinder().isBind = true
+//        return PressureServiceBinder()
+//    }
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "servise is unbind " + intent.toString())
@@ -181,13 +197,35 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_media_play)
+                .setSmallIcon(getIconId())
                 .setStyle(NotificationCompat.BigTextStyle()
                         .bigText("Collecting pressure..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(notifyPendingIntent)
 
         return builder.build()
+    }
+
+    private fun getIconId(): Int {
+        when (lastPower) {
+            0 -> return R.drawable.icon_0
+            1 -> return R.drawable.icon_1
+            2 -> return R.drawable.icon_2
+            3 -> return R.drawable.icon_3
+            4 -> return R.drawable.icon_4
+            5 -> return R.drawable.icon_5
+        }
+        return R.drawable.icon_0
+    }
+
+
+    private fun updateNotification() {
+
+        val notification = getNotification()
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
+            as NotificationManager
+
+        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     /**
@@ -218,6 +256,7 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
         fun setRainPower(rainpower: Int) {
             this@PressureService.lastPower = rainpower
+            updateNotification()
         }
 
         fun closeService() {
@@ -236,6 +275,16 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
 
     fun stopService() {
         stopSelf()
+    }
+
+    private fun createTxtFile(): FileWriter? {
+        val fileName = "GoodNotes.txt"
+        return try {
+            FileWriter(File("sdcard/$fileName"))
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
     }
 
 }

@@ -4,16 +4,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
+
+import com.developer.filepicker.view.FilePickerDialog;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import stas.batura.pressuretracker.ui.main.MainFragment;
 import stas.batura.pressuretracker.service.PressureService;
+import stas.batura.pressuretracker.utils.ContexUtils;
 
 import static android.widget.Toast.LENGTH_LONG;
 
@@ -37,6 +42,16 @@ public class MainActivity extends AppCompatActivity {
 //                    .replace(R.id.container, MainFragment.newInstance())
 //                    .commitNow();
 //        }
+        if (!ContexUtils.checkStorageAccessPermissions(this)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                String[] array = new String[1];
+                array[0] = Manifest.permission.READ_EXTERNAL_STORAGE;
+                this.requestPermissions(
+                        array,
+                        FilePickerDialog.EXTERNAL_READ_PERMISSION_GRANT
+                );
+            }
+        }
     }
 
     @Override

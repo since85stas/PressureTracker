@@ -10,6 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import com.anychart.AnyChart
+import com.anychart.charts.Cartesian
+import com.anychart.graphics.vector.Stroke
 import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
@@ -19,6 +22,7 @@ import stas.batura.pressuretracker.MainViewModel
 import stas.batura.pressuretracker.R
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.databinding.GraphFragmentBinding
+import stas.batura.pressuretracker.utils.getCurrentDayBegin
 
 
 @AndroidEntryPoint
@@ -34,6 +38,8 @@ class GraphFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        val time = getCurrentDayBegin()
 
         mainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
@@ -64,9 +70,6 @@ class GraphFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-// custom label formatter to show currency "EUR"
-
-        // custom label formatter to show currency "EUR"
         graph.gridLabelRenderer.labelFormatter = object : DefaultLabelFormatter() {
             override fun formatLabel(value: Double, isValueX: Boolean): String {
                 return if (isValueX) {
@@ -81,14 +84,6 @@ class GraphFragment: Fragment() {
 
         radioGroup = view.findViewById<RadioGroup>(R.id.radio_group)
 
-//        radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).setActivated(true);
-
-//        radioGroup.check(radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).getId());
-
-
-//        radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).setActivated(true);
-
-//        radioGroup.check(radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).getId());
         radioGroup.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.rain_0 -> {
@@ -133,6 +128,7 @@ class GraphFragment: Fragment() {
         }
     }
 
+
     private fun addObservers() {
         graphViewModel.pressList.observe(viewLifecycleOwner, Observer {
 
@@ -159,12 +155,37 @@ class GraphFragment: Fragment() {
         return listM.toTypedArray()
     }
 
+//    private fun parseAnyData(list: List<Pressure>): List<DataEntry> {
+//
+//        var outData = mutableListOf<DataEntry>()
+//        for(pressure in list) {
+////            val entry =
+//        }
+//    }
+
+    /**
+     * checks radio group init value
+     */
     private fun checkedradio() {
         radioGroup.check(radioGroup.getChildAt(graphViewModel.lastPress.lastPowr).id)
     }
 
+    private fun crateAnyPlot(data: List<DataPoint>) {
+        val cartesian: Cartesian = AnyChart.line()
 
+        cartesian.animation(true)
 
+        cartesian.padding(10.0, 20.0, 5.0, 20.0)
+
+        cartesian.crosshair().enabled(true)
+        cartesian.crosshair()
+                .yLabel(true) // TODO ystroke
+                .yStroke(null as Stroke?, null, null, null as String?, null as String?)
+    }
+
+    /**
+     * creating pressue plot using GraphView
+     */
     private fun createPlot(array: Array<DataPoint>) {
         val series: LineGraphSeries<DataPoint> = LineGraphSeries(array
         )
@@ -172,6 +193,10 @@ class GraphFragment: Fragment() {
         graph.removeAllSeries()
         graph.addSeries(series)
 
+        graph.rootView
+
+        graph.viewport.isScalable = true
+        graph.viewport.setScalableY(true)
     }
 
 

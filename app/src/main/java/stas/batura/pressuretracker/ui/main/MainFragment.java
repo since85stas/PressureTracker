@@ -78,8 +78,6 @@ public class MainFragment extends Fragment {
     public void onStart() {
         super.onStart();
         addObservers();
-
-        checkedradio();
     }
 
     @Override
@@ -106,41 +104,6 @@ public class MainFragment extends Fragment {
             mainViewModel.stopService();
         });
 
-        radioGroup = view.findViewById(R.id.radio_group);
-
-//        radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).setActivated(true);
-
-//        radioGroup.check(radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).getId());
-
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-
-                    case R.id.rain_0:
-                        fragmentModel.saveRainPower(0);
-                        mainViewModel.setServiceRain(0);
-                        break;
-
-                    case R.id.rain_1:
-                        fragmentModel.saveRainPower(1);
-                        mainViewModel.setServiceRain(1);
-                        break;
-
-                    case R.id.rain_2:
-                        fragmentModel.saveRainPower(2);
-                        mainViewModel.setServiceRain(2);
-                        break;
-
-                    case R.id.rain_3:
-                        fragmentModel.saveRainPower(3);
-                        mainViewModel.setServiceRain(3);
-                        break;
-                }
-
-            }
-        });
-
         Button graph_but = view.findViewById(R.id.pres_to_graph);
 
         graph_but.setOnClickListener(new View.OnClickListener() {
@@ -151,10 +114,6 @@ public class MainFragment extends Fragment {
 
             }
         });
-    }
-
-    private void  checkedradio() {
-        radioGroup.check(radioGroup.getChildAt(fragmentModel.getLastPress().getLastPowr()).getId());
     }
 
     /**

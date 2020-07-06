@@ -15,7 +15,6 @@ data class Pressure (
         @PrimaryKey(autoGenerate = true)
         var pressureId: Long = 0L
 
-
 )
 
 {

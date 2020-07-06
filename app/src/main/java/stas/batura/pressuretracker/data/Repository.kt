@@ -48,6 +48,10 @@ class Repository @Inject constructor(): IRep {
         return pressureData.getPressures()
     }
 
+    override fun getPressuresInInterval(statTime: Long, endTime: Long): LiveData<List<Pressure>> {
+        return pressureData.getPressuresInInterval(statTime, endTime)
+    }
+
     override fun setLastRainPower(power: Int) {
         ioScope.launch {
             pressureData.setLastRainPower(power)
@@ -62,7 +66,6 @@ class Repository @Inject constructor(): IRep {
             }.await()
         }
         return result
-
     }
 
     override fun getRainPow(): Rain {
