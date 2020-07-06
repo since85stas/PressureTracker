@@ -228,6 +228,10 @@ class PressureService @Inject constructor(): Service (), SensorEventListener, Ch
             return this@PressureService.lastPower
         }
 
+        fun savePressure() {
+            return this@PressureService.registerListn()
+        }
+
     }
 
     fun stopService() {

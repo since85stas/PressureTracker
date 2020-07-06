@@ -8,4 +8,10 @@ class GraphViewModel @ViewModelInject constructor(private var repository: IRep) 
 
     val pressList = repository.getPressures()
 
+    val lastPress = repository.getRainPower()
+
+    fun saveRainPower(power: Int) {
+        repository.setLastRainPower(power)
+    }
+
 }

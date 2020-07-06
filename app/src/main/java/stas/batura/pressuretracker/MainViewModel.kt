@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.batura.stat.batchat.repository.room.PressureDao
 import stas.batura.pressuretracker.data.IRep
+import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.service.PressureService
 
 class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewModel() {
@@ -75,6 +76,15 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
     fun setServiceRain(rainp: Int) {
         if (playerServiceBinder != null) {
             playerServiceBinder!!.setRainPower(rainp)
+        }
+    }
+
+    /**
+     * saving value in DB
+     */
+    fun savePressureValue() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.savePressure()
         }
     }
 
