@@ -9,7 +9,7 @@ import stas.batura.pressuretracker.utils.getCurrentDayEnd
 class GraphViewModel @ViewModelInject constructor(private var repository: IRep) : ViewModel() {
 
 //    val pressList = repository.getPressures()
-    val pressList = repository.getPressuresInInterval(getCurrentDayBegin(), getCurrentDayEnd())
+    val pressList = repository.getPressures()
 
     val lastPress = repository.getRainPower()
 

@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         if (!ContexUtils.checkStorageAccessPermissions(this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 String[] array = new String[1];
-                array[0] = Manifest.permission.READ_EXTERNAL_STORAGE;
+                array[0] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
                 this.requestPermissions(
                         array,
                         FilePickerDialog.EXTERNAL_READ_PERMISSION_GRANT

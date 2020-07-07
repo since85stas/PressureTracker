@@ -88,4 +88,10 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
         }
     }
 
+    fun testSave() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.testWrite()
+        }
+    }
+
 }

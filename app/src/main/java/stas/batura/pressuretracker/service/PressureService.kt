@@ -1,6 +1,9 @@
 package stas.batura.pressuretracker.service
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -15,9 +18,11 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.MainActivity
@@ -29,6 +34,7 @@ import stas.batura.pressuretracker.utils.getCurrentDayEnd
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -298,6 +304,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             return this@PressureService.registerListn()
         }
 
+        fun testWrite() {
+            this@PressureService.testWriteFile()
+        }
+
     }
 
     /**
@@ -307,19 +317,32 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         stopSelf()
     }
 
+    /**
+     * adding observers for presures
+     */
     fun addObservers() {
         repository.getPressuresInInterval(lastDayBegin.timeInMillis,
                 getCurrentDayEnd(lastDayBegin).timeInMillis)
                 .observe( this, Observer {
                     Log.d(TAG, "addObservers: getting day pressure")
                     ioScope.launch {
-                        writeDataToFile(createTxtFile(lastDayBegin.toString()), it)
-                }
+                        Log.d(TAG, "addObservers: size write =" + it.size)
+                        val formatter = SimpleDateFormat("dd.MM.YY ");
+                        val dateString = formatter.format( Date(lastDayBegin.timeInMillis)) + ".txt";
+                        writeDataToFile(createTxtFile(dateString), it)
+                        lastDayBegin = getCurrentDayBegin()
+                    }
+                    removeObservers()
         })
     }
 
     fun removeObservers() {
-//        repository.getPressuresInInterval().removeObservers(this)
+        repository.getPressuresInInterval(lastDayBegin.timeInMillis,
+        getCurrentDayEnd(lastDayBegin).timeInMillis).removeObservers(this)
+    }
+
+    fun testWriteFile() {
+        addObservers()
     }
 
     private fun checkNextDay(): Boolean {
@@ -327,12 +350,25 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
-        Log.d(TAG, "writeDataToFile: ")
+        Log.d(TAG, "writeDataToFile: begin")
+        for(pressure in data) {
+            fileWriter!!.append(pressure.time.toString() + "\n")
+        }
+        fileWriter!!.close()
+        Log.d(TAG, "writeDataToFile: close file")
     }
 
     private fun createTxtFile(fileName: String): FileWriter? {
         return try {
-            FileWriter(File("sdcard/$fileName"))
+            // create a File object for the parent directory
+
+            // create a File object for the parent directory
+            val wallpaperDirectory = File("/sdcard/Pressure/")
+            // have the object build the directory structure, if needed.
+            // have the object build the directory structure, if needed.
+            wallpaperDirectory.mkdirs()
+            val file = File(wallpaperDirectory,fileName)
+            FileWriter(file)
         } catch (e: IOException) {
             e.printStackTrace()
             null

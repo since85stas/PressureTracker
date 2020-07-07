@@ -6,6 +6,10 @@
         <variable
             name="graphModel"
             type="stas.batura.pressuretracker.ui.graph.GraphViewModel" />
+
+        <variable
+            name="mainViewModel"
+            type= "stas.batura.pressuretracker.MainViewModel"/>
     </data>
 
     <LinearLayout
@@ -137,6 +141,13 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             />
+
+<!--        <Button-->
+<!--            android:id="@+id/testbutton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:onClick="@{() -> mainViewModel.testSave()}"-->
+<!--            />-->
 
 <!--        <com.anychart.AnyChartView-->
 <!--            android:id="@+id/any_chart"-->

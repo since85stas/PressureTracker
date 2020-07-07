@@ -51,6 +51,7 @@ class GraphFragment: Fragment() {
                 false)
 
         binding.graphModel = graphViewModel
+        binding.mainViewModel = mainViewModel
         binding.setLifecycleOwner(viewLifecycleOwner)
         return binding.getRoot()
     }
