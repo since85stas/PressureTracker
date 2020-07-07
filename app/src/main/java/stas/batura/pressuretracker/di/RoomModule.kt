@@ -2,6 +2,7 @@ package stas.batura.pressuretracker.di
 
 import android.content.Context
 import android.hardware.SensorManager
+import android.location.LocationManager
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.Room
 import dagger.Component
@@ -44,4 +45,10 @@ class SensorModule {
         return sensorManager
     }
 
+    @Provides
+    @Singleton
+    fun provideLocationManager(@ApplicationContext appContext: Context): LocationManager {
+        val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager
+    }
 }

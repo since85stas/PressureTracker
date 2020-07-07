@@ -97,7 +97,7 @@ dependencies {
 
     implementation 'com.jjoe64:graphview:4.2.2'
 
-    implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
+//    implementation 'com.github.AnyChart:AnyChart-Android:1.1.2'
 
     // file picker
     implementation 'com.github.TutorialsAndroid:FilePicker:v8.0.19'

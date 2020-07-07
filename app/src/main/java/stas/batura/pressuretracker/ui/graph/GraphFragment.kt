@@ -10,9 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import com.anychart.AnyChart
-import com.anychart.charts.Cartesian
-import com.anychart.graphics.vector.Stroke
 import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
@@ -169,19 +166,6 @@ class GraphFragment: Fragment() {
      */
     private fun checkedradio() {
         radioGroup.check(radioGroup.getChildAt(graphViewModel.lastPress.lastPowr).id)
-    }
-
-    private fun crateAnyPlot(data: List<DataPoint>) {
-        val cartesian: Cartesian = AnyChart.line()
-
-        cartesian.animation(true)
-
-        cartesian.padding(10.0, 20.0, 5.0, 20.0)
-
-        cartesian.crosshair().enabled(true)
-        cartesian.crosshair()
-                .yLabel(true) // TODO ystroke
-                .yStroke(null as Stroke?, null, null, null as String?, null as String?)
     }
 
     /**

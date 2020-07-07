@@ -10,8 +10,12 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Binder
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
@@ -31,6 +35,7 @@ import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.utils.getCurrentDayBegin
 import stas.batura.pressuretracker.utils.getCurrentDayEnd
+import stas.batura.pressuretracker.utils.getTimeInHours
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -40,7 +45,8 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class PressureService @Inject constructor(): LifecycleService(), SensorEventListener, ChessStateChageListner {
+class PressureService @Inject constructor(): LifecycleService(), SensorEventListener, LocationListener,
+        ChessStateChageListner {
 
     /**
      * Job allows us to cancel all coroutines started by this ViewModel.
@@ -67,6 +73,18 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     // pressure sensor installed
     private var sensor: Sensor? = null
+
+    // flag for GPS status
+    var isGPSEnabled = false
+
+    // flag for network status
+    var isNetworkEnabled = false
+
+    // flag for GPS status
+    var canGetLocation = false
+
+    // Declaring a Location Manager
+    @Inject lateinit var locationManager: LocationManager
 
     // chess instance to calculate distance before saves
     private lateinit var chessClockRx: ChessClockRx
@@ -176,6 +194,18 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         sensorManager.unregisterListener(this)
     }
 
+    override fun onLocationChanged(location: Location?) {
+    }
+
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+    }
+
+    override fun onProviderEnabled(provider: String?) {
+    }
+
+    override fun onProviderDisabled(provider: String?) {
+    }
+
     /**
      * creates a new clock object
      */
@@ -197,9 +227,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
             registerListn()
-
             if (checkNextDay()) {
-                addObservers()
+//                addObservers()
+                getPressrsForLastday()
             }
         }
     }
@@ -320,29 +350,41 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     /**
      * adding observers for presures
      */
-    fun addObservers() {
-        repository.getPressuresInInterval(lastDayBegin.timeInMillis,
+//    fun addObservers() {
+//        repository.getPressuresInIntervalLive(lastDayBegin.timeInMillis,
+//                getCurrentDayEnd(lastDayBegin).timeInMillis)
+//                .observe( this, Observer {
+//                    Log.d(TAG, "addObservers: getting day pressure")
+//                    ioScope.launch {
+//                        Log.d(TAG, "addObservers: size write =" + it.size)
+//                        val formatter = SimpleDateFormat("dd.MM.YY ");
+//                        val dateString = formatter.format( Date(lastDayBegin.timeInMillis)) + ".txt";
+//                        writeDataToFile(createTxtFile(dateString), it)
+//                        lastDayBegin = getCurrentDayBegin()
+//                    }
+//
+//        })
+//    }
+    fun getPressrsForLastday() {
+        ioScope.launch {
+            val res =  repository.getPressuresInInterval(lastDayBegin.timeInMillis,
                 getCurrentDayEnd(lastDayBegin).timeInMillis)
-                .observe( this, Observer {
-                    Log.d(TAG, "addObservers: getting day pressure")
-                    ioScope.launch {
-                        Log.d(TAG, "addObservers: size write =" + it.size)
+//            val res = repository.getPressures()
+            Log.d(TAG, "getPressrsForLastday: result")
                         val formatter = SimpleDateFormat("dd.MM.YY ");
                         val dateString = formatter.format( Date(lastDayBegin.timeInMillis)) + ".txt";
-                        writeDataToFile(createTxtFile(dateString), it)
+                        writeDataToFile(createTxtFile(dateString), res)
                         lastDayBegin = getCurrentDayBegin()
-                    }
-                    removeObservers()
-        })
+        }
     }
 
     fun removeObservers() {
-        repository.getPressuresInInterval(lastDayBegin.timeInMillis,
+        repository.getPressuresInIntervalLive(lastDayBegin.timeInMillis,
         getCurrentDayEnd(lastDayBegin).timeInMillis).removeObservers(this)
     }
 
     fun testWriteFile() {
-        addObservers()
+        getPressrsForLastday()
     }
 
     private fun checkNextDay(): Boolean {
@@ -351,10 +393,14 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
         Log.d(TAG, "writeDataToFile: begin")
-        for(pressure in data) {
-            fileWriter!!.append(pressure.time.toString() + "\n")
+        if (data.size  > 0) {
+            val initTime = data[0].time
+            for (pressure in data) {
+                fileWriter!!.append(getTimeInHours((pressure.time - initTime).toInt()).toString() +
+                        " " + pressure.pressure + " " + pressure.rainPower + "\n")
+            }
+            fileWriter!!.close()
         }
-        fileWriter!!.close()
         Log.d(TAG, "writeDataToFile: close file")
     }
 

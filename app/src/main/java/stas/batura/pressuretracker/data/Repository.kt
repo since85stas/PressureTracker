@@ -44,11 +44,19 @@ class Repository @Inject constructor(): IRep {
         }
     }
 
-    override fun getPressures(): LiveData<List<Pressure>> {
+    override fun getPressuresLive(): LiveData<List<Pressure>> {
+        return pressureData.getPressuresLive()
+    }
+
+    override fun getPressures(): List<Pressure> {
         return pressureData.getPressures()
     }
 
-    override fun getPressuresInInterval(statTime: Long, endTime: Long): LiveData<List<Pressure>> {
+    override fun getPressuresInIntervalLive(statTime: Long, endTime: Long): LiveData<List<Pressure>> {
+        return pressureData.getPressuresInIntervalLive(statTime, endTime)
+    }
+
+    override fun getPressuresInInterval(statTime: Long, endTime: Long): List<Pressure> {
         return pressureData.getPressuresInInterval(statTime, endTime)
     }
 

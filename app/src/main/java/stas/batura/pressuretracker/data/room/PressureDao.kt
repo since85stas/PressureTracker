@@ -14,10 +14,16 @@ interface PressureDao {
     fun insertPressure(pressure: Pressure)
 
     @Query("SELECT * FROM pressure_table ORDER BY pressureId")
-    fun getPressures(): LiveData<List<Pressure>>
+    fun getPressuresLive(): LiveData<List<Pressure>>
+
+    @Query("SELECT * FROM pressure_table ORDER BY pressureId")
+    fun getPressures(): List<Pressure>
 
     @Query ("SELECT * FROM pressure_table WHERE time BETWEEN :statTime AND :endTime ORDER BY pressureId")
-    fun getPressuresInInterval(statTime: Long, endTime: Long): LiveData<List<Pressure>>
+    fun getPressuresInIntervalLive(statTime: Long, endTime: Long): LiveData<List<Pressure>>
+
+    @Query ("SELECT * FROM pressure_table WHERE time BETWEEN :statTime AND :endTime ORDER BY pressureId")
+    fun getPressuresInInterval(statTime: Long, endTime: Long): List<Pressure>
 
 //    @Insert
 //    fun insertRain(rain: Rain)
