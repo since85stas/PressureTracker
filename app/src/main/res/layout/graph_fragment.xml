@@ -142,12 +142,12 @@
             android:layout_height="200dp"
             />
 
-<!--        <Button-->
-<!--            android:id="@+id/testbutton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:onClick="@{() -> mainViewModel.testSave()}"-->
-<!--            />-->
+        <Button
+            android:id="@+id/testbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> mainViewModel.testLoc()}"
+            />
 
 <!--        <com.anychart.AnyChartView-->
 <!--            android:id="@+id/any_chart"-->

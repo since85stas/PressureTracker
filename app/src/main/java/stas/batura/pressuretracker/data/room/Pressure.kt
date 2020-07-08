@@ -12,6 +12,8 @@ data class Pressure (
 
         var rainPower: Int = 0,
 
+        var altitude: Float = 0.0f,
+
         @PrimaryKey(autoGenerate = true)
         var pressureId: Long = 0L
 

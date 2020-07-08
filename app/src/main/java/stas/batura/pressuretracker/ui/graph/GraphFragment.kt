@@ -33,6 +33,9 @@ class GraphFragment: Fragment() {
 
     lateinit var radioGroup: RadioGroup
 
+    private var isStarted = false
+
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
@@ -58,6 +61,8 @@ class GraphFragment: Fragment() {
         addObservers()
 
         checkedradio()
+
+        isStarted = true
     }
 
     override fun onStop() {
@@ -84,35 +89,48 @@ class GraphFragment: Fragment() {
 
         radioGroup.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
+
                 R.id.rain_0 -> {
-                    graphViewModel.saveRainPower(0)
-                    mainViewModel.setServiceRain(0)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(0)
+                        mainViewModel.setServiceRain(0)
+                        mainViewModel.savePressureValue()
+                    }
                 }
                 R.id.rain_1 -> {
-                    graphViewModel.saveRainPower(1)
-                    mainViewModel.setServiceRain(1)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(1)
+                        mainViewModel.setServiceRain(1)
+                        mainViewModel.savePressureValue()
+                    }
                 }
                 R.id.rain_2 -> {
-                    graphViewModel.saveRainPower(2)
-                    mainViewModel.setServiceRain(2)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(2)
+                        mainViewModel.setServiceRain(2)
+                        mainViewModel.savePressureValue()
+                    }
                 }
                 R.id.rain_3 -> {
-                    graphViewModel.saveRainPower(3)
-                    mainViewModel.setServiceRain(3)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(3)
+                        mainViewModel.setServiceRain(3)
+                        mainViewModel.savePressureValue()
+                    }
                 }
                 R.id.rain_4 -> {
-                    graphViewModel.saveRainPower(4)
-                    mainViewModel.setServiceRain(4)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(4)
+                        mainViewModel.setServiceRain(4)
+                        mainViewModel.savePressureValue()
+                    }
                 }
                 R.id.rain_5 -> {
-                    graphViewModel.saveRainPower(5)
-                    mainViewModel.setServiceRain(5)
-                    mainViewModel.savePressureValue()
+                    if (isStarted) {
+                        graphViewModel.saveRainPower(5)
+                        mainViewModel.setServiceRain(5)
+                        mainViewModel.savePressureValue()
+                    }
                 }
             }
         })

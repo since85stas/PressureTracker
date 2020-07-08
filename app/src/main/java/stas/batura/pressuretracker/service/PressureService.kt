@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.service
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,9 +11,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
+import android.location.*
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
@@ -21,12 +20,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.Observer
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.tasks.Tasks.await
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
 import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
 import stas.batura.pressuretracker.MainActivity
@@ -86,6 +83,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     // Declaring a Location Manager
     @Inject lateinit var locationManager: LocationManager
 
+    @Inject lateinit var fusedLocationClient: FusedLocationProviderClient
+
     // chess instance to calculate distance before saves
     private lateinit var chessClockRx: ChessClockRx
 
@@ -95,6 +94,17 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     // begin of last day date
     private lateinit var lastDayBegin: Calendar
 
+    // The minimum distance to change Updates in meters
+    private val MIN_DISTANCE_CHANGE_FOR_UPDATES: Long = 10 // 10 meters
+
+
+    // The minimum time between updates in milliseconds
+    private val MIN_TIME_BW_UPDATES = 1000 * 60 * 1 // 1 minute
+            .toFloat()
+
+    private var lastAlt: Float = 0.0f
+
+    @SuppressLint("MissingPermission")
     override fun onCreate() {
         super.onCreate()
         val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
@@ -112,7 +122,13 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
         lastPower = repository.getRainPower().lastPowr
 
-
+//        locationManager.requestLocationUpdates(
+//                LocationManager.GPS_PROVIDER,
+//
+//                MIN_DISTANCE_CHANGE_FOR_UPDATES,
+//                MIN_TIME_BW_UPDATES,this);
+//
+//        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -121,13 +137,6 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         this.PressureServiceBinder().isBind = true
         return PressureServiceBinder()
     }
-
-
-    //    override fun onBind(intent: Intent?): IBinder? {
-//        Log.d(TAG, "servise is bind " + intent.toString())
-//        this.PressureServiceBinder().isBind = true
-//        return PressureServiceBinder()
-//    }
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "servise is unbind " + intent.toString())
@@ -182,8 +191,13 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * registring from sensor
      */
     private fun registerListn() {
-        sensor?.also { light ->
-            sensorManager.registerListener(this, light, 100000)
+
+        if (sensor != null) {
+            sensor?.also { light ->
+                sensorManager.registerListener(this, light, 100000)
+            }
+        } else {
+            savePressureValue(1000.1f)
         }
     }
 
@@ -195,6 +209,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     override fun onLocationChanged(location: Location?) {
+        Log.d(TAG, "onLocationChanged: ")
     }
 
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
@@ -306,7 +321,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+            notificationManager?.createNotificationChannel(channel)
         }
     }
 
@@ -336,6 +351,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
         fun testWrite() {
             this@PressureService.testWriteFile()
+        }
+
+        fun testLocation() {
+            this@PressureService.getLocation()
         }
 
     }
@@ -392,7 +411,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
-        Log.d(TAG, "writeDataToFile: begin")
+        Log.d(TAG, "writeDataToFile: begin size=" + data.size)
         if (data.size  > 0) {
             val initTime = data[0].time
             for (pressure in data) {
@@ -418,6 +437,60 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         } catch (e: IOException) {
             e.printStackTrace()
             null
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLocation() {
+        fusedLocationClient.lastLocation
+                .addOnSuccessListener { location : Location? ->
+                    Log.d(TAG, "getLocation: " + location!!.altitude + " " + location.latitude + " "
+                    + location.longitude)
+                    ioScope.launch {
+                        lastAlt = location!!.altitude.toFloat()
+                        sendAltitude()
+                    }
+                }
+    }
+
+    private fun collectDataForPress() {
+        runBlocking {
+            val res = ioScope.async {
+                sendAltitude()
+            }
+            res.await()
+        }
+    }
+
+    private suspend fun sendAltitude(): Float {
+
+        return lastAlt
+    }
+
+    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {
+        override fun onNmeaReceived(timestamp: Long, nmea: String?) {
+            parseNmeaString(nmea!!)
+        }
+    }
+
+    private val nmaListn: OnNmeaMessageListener = object : OnNmeaMessageListener {
+        override fun onNmeaMessage(message: String?, timestamp: Long) {
+            parseNmeaString(message!!)
+        }
+    }
+
+
+    private fun parseNmeaString(line: String) {
+        if (line.startsWith("$")) {
+            val tokens = line.split(",".toRegex()).toTypedArray()
+            val type = tokens[0]
+
+            // Parse altitude above sea level, Detailed description of NMEA string here http://aprs.gids.nl/nmea/#gga
+            if (type.startsWith("\$GPGGA")) {
+                if (!tokens[9].isEmpty()) {
+                    val alt = tokens[9].toDouble()
+                }
+            }
         }
     }
 

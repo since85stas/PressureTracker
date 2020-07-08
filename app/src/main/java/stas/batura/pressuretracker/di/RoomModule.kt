@@ -5,6 +5,8 @@ import android.hardware.SensorManager
 import android.location.LocationManager
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.Room
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.Component
 import dagger.Module
 import dagger.Provides
@@ -50,5 +52,12 @@ class SensorModule {
     fun provideLocationManager(@ApplicationContext appContext: Context): LocationManager {
         val locationManager = appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager
+    }
+
+    @Provides
+    @Singleton
+    fun provideFusedLocation(@ApplicationContext appContext: Context): FusedLocationProviderClient {
+        val provider = LocationServices.getFusedLocationProviderClient(appContext)
+        return provider
     }
 }
