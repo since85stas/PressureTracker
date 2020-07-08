@@ -1,4 +1,4 @@
-package stas.batura.pressuretracker.ChessClockRx;
+package stas.batura.pressuretracker.rx.chess;
 
 import android.util.Log;
 

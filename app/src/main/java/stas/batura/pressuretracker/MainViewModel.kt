@@ -99,4 +99,10 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
             playerServiceBinder!!.testLocation()
         }
     }
+
+    fun testRx() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.testRx()
+        }
+    }
 }

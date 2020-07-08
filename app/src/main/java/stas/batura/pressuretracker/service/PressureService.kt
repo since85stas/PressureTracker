@@ -21,15 +21,20 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.tasks.Tasks.await
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import stas.batura.pressuretracker.ChessClockRx.ChessClockRx
-import stas.batura.pressuretracker.ChessClockRx.ChessStateChageListner
+import io.reactivex.functions.Consumer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import rx.Observable
 import stas.batura.pressuretracker.MainActivity
 import stas.batura.pressuretracker.R
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
+import stas.batura.pressuretracker.rx.chess.ChessClockRx
+import stas.batura.pressuretracker.rx.chess.ChessStateChageListner
+import stas.batura.pressuretracker.rx.rxZipper.Zipper
 import stas.batura.pressuretracker.utils.getCurrentDayBegin
 import stas.batura.pressuretracker.utils.getCurrentDayEnd
 import stas.batura.pressuretracker.utils.getTimeInHours
@@ -104,6 +109,18 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var lastAlt: Float = 0.0f
 
+    var stringObservable1 = Observable.just("String")
+    var stringObservable2 = Observable.just("String")
+
+
+    private val consumer = object : Consumer<String> {
+        override fun accept(t: String?) {
+            println(t)
+        }
+    }
+
+    val zipper = Zipper(consumer)
+
     @SuppressLint("MissingPermission")
     override fun onCreate() {
         super.onCreate()
@@ -114,22 +131,14 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
         initPressSensor()
 
-//        registerListn()
-
         createClock()
 
         startForeground(NOTIFICATION_ID, getNotification())
 
         lastPower = repository.getRainPower().lastPowr
 
-//        locationManager.requestLocationUpdates(
-//                LocationManager.GPS_PROVIDER,
-//
-//                MIN_DISTANCE_CHANGE_FOR_UPDATES,
-//                MIN_TIME_BW_UPDATES,this);
-//
-//        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
     }
+
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -183,6 +192,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         if (event != null) {
             val pressure = event.values
             unregisterListn()
+
+            zipper.generatePress(pressure[0].toInt())
+//            zipper.generObserv()
+
             savePressureValue(pressure[0])
         }
     }
@@ -241,12 +254,18 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     override fun timeChange(time: Long) {
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
-            registerListn()
+//            registerListn()
+            combineData()
             if (checkNextDay()) {
 //                addObservers()
                 getPressrsForLastday()
             }
         }
+    }
+
+    private fun combineData() {
+        registerListn()
+        getLocation()
     }
 
     /**
@@ -346,7 +365,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
 
         fun savePressure() {
-            return this@PressureService.registerListn()
+            this@PressureService.registerListn()
+            this@PressureService.getLocation()
+            return
         }
 
         fun testWrite() {
@@ -357,6 +378,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             this@PressureService.getLocation()
         }
 
+        fun testRx() {
+            this@PressureService.testRx()
+        }
     }
 
     /**
@@ -448,23 +472,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                     + location.longitude)
                     ioScope.launch {
                         lastAlt = location!!.altitude.toFloat()
-                        sendAltitude()
+                        zipper.generateAltit(location!!.altitude.toString())
+                        zipper.generObserv()
                     }
                 }
-    }
-
-    private fun collectDataForPress() {
-        runBlocking {
-            val res = ioScope.async {
-                sendAltitude()
-            }
-            res.await()
-        }
-    }
-
-    private suspend fun sendAltitude(): Float {
-
-        return lastAlt
     }
 
     private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {
@@ -477,6 +488,12 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         override fun onNmeaMessage(message: String?, timestamp: Long) {
             parseNmeaString(message!!)
         }
+    }
+
+    private fun testRx() {
+        zipper.generatePress(1)
+        zipper.generateAltit("1")
+        zipper.generObserv()
     }
 
 
