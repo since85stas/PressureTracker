@@ -14,7 +14,7 @@ interface IRep: PressureDao, IDop {
 }
 
 interface IDop {
-    fun getRainPow(): Rain
+//    fun getRainPow(): Rain
 }
 
 class Repository @Inject constructor(): IRep {
@@ -73,25 +73,31 @@ class Repository @Inject constructor(): IRep {
                 result = pressureData.getRainPower()
             }.await()
         }
-        return result
+        if (result == null) {
+            val rain = Rain(0)
+            insertRain(rain)
+            return rain
+        } else {
+            return result
+        }
     }
 
-    override fun getRainPow(): Rain {
-        val block = runBlocking {
-            getRainPow()
-        }
-        return block
-    }
+//    override fun getRainPow(): Rain {
+//        val block = runBlocking {
+//            getRainPow()
+//        }
+//        return block
+//    }
+
+//    override fun insertRain(rain: Rain) {
+//        Log.d("ins","ins")
+//    }
 
     override fun insertRain(rain: Rain) {
-        Log.d("ins","ins")
+        ioScope.launch {
+            pressureData.insertRain(rain)
+        }
     }
-
-    //    override fun insertRain(rain: Rain) {
-//        ioScope.launch {
-//            pressureData.insertRain(rain)
-//        }
-//    }
 //
 //    override fun getRainList(): LiveData<List<Rain>> {
 //        return pressureData.getRainList()

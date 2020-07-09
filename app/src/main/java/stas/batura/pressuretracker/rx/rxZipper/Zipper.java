@@ -10,7 +10,7 @@ import io.reactivex.functions.Consumer;
 
 public class Zipper {
 
-    public Zipper (Consumer<String> cons) {
+    public Zipper (Consumer<Container> cons) {
         try {
             consumer = cons;
             zipOperator();
@@ -19,10 +19,10 @@ public class Zipper {
         }
     }
 
-    Consumer<String> consumer ;
+    Consumer<Container> consumer ;
 
-    Observable<Integer> pressureObs = Observable.empty();
-    Observable<String> altitObs = Observable.empty();
+    Observable<Float> pressureObs = Observable.empty();
+    Observable<Float> altitObs = Observable.empty();
 
     public void zipOperator() throws Exception {
 
@@ -32,12 +32,12 @@ public class Zipper {
     }
 
 
-    public void generatePress(Integer press) {
+    public void generatePress(Float press) {
 
         pressureObs = Observable.just(press);
     }
 
-    public void generateAltit(String alt) {
+    public void generateAltit(Float alt) {
         altitObs = Observable.just(alt);
     }
 
@@ -47,11 +47,11 @@ public class Zipper {
     }
 
     @NonNull
-    private BiFunction<Integer, String, String> mergeEmittedItems() {
-        return new BiFunction<Integer, String, String>() {
+    private BiFunction<Float, Float, Container> mergeEmittedItems() {
+        return new BiFunction<Float, Float, Container>() {
             @Override
-            public String apply(Integer index, String letter) throws Exception {
-                return "[" + index + "] " + letter;
+            public Container apply(Float press, Float alt) throws Exception {
+                return new Container(press, alt);
             }
         };
     }

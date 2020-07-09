@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.ui.graph
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -59,6 +60,8 @@ class GraphFragment: Fragment() {
     override fun onStart() {
         super.onStart()
         addObservers()
+
+        graphViewModel.updateRainpower()
 
         checkedradio()
 
@@ -149,7 +152,15 @@ class GraphFragment: Fragment() {
         graphViewModel.pressList.observe(viewLifecycleOwner, Observer {
 
             if (it != null) {
-                createPlot(parseData(it))
+//                drawLine(prepareData(it))
+                graph.removeAllSeries()
+                val lines = prepareData(it)
+                for(line in lines) {
+                    drawLine(line)
+                }
+                graph.rootView
+                graph.viewport.isScalable = true
+                graph.viewport.setScalableY(true)
             }
 
         })
@@ -159,16 +170,29 @@ class GraphFragment: Fragment() {
         graphViewModel.pressList.removeObservers(viewLifecycleOwner)
     }
 
-    private fun parseData(list: List<Pressure>):  Array<DataPoint>{
+    /**
+     * preparing data for plot
+     */
+    private fun prepareData(list: List<Pressure>):  List<List<Pressure>>{
+
+        val linesList = mutableListOf<List<Pressure>>()
 
         var count = 0
-        var listM = mutableListOf<DataPoint>()
+        var presuresList = mutableListOf<Pressure>()
+        var lastPower = list[0].rainPower
         for (pressure in list) {
-
-            val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
-            listM.add(data)
+            if (pressure.rainPower == lastPower) {
+//                val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
+                presuresList.add(pressure)
+            } else {
+                linesList.add(presuresList)
+                presuresList = mutableListOf<Pressure>()
+                lastPower = pressure.rainPower
+                presuresList.add(pressure)
+            }
         }
-        return listM.toTypedArray()
+
+        return linesList
     }
 
 //    private fun parseAnyData(list: List<Pressure>): List<DataEntry> {
@@ -189,19 +213,33 @@ class GraphFragment: Fragment() {
     /**
      * creating pressue plot using GraphView
      */
-    private fun createPlot(array: Array<DataPoint>) {
-        val series: LineGraphSeries<DataPoint> = LineGraphSeries(array
-        )
-
-        graph.removeAllSeries()
+    private fun drawLine(array: List<Pressure>) {
+        val data = parseData(array)
+        val series: LineGraphSeries<DataPoint> = LineGraphSeries(data)
+        series.color = getColor(array[0])
         graph.addSeries(series)
-
-        graph.rootView
-
-        graph.viewport.isScalable = true
-        graph.viewport.setScalableY(true)
     }
 
+    private fun parseData(list: List<Pressure>):  Array<DataPoint>{
+        var count = 0
+        var listM = mutableListOf<DataPoint>()
+        for (pressure in list) {
+            val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
+            listM.add(data)
+        }
+        return listM.toTypedArray()
+    }
 
+    private fun getColor(pressure: Pressure): Int {
+        when(pressure.rainPower) {
+            0 -> return Color.YELLOW
+            1 -> return Color.GRAY
+            2 -> return Color.CYAN
+            3 -> return Color.BLUE
+            5 -> return Color.MAGENTA
+            6 -> return Color.RED
+        }
+        return Color.YELLOW
+    }
 
 }

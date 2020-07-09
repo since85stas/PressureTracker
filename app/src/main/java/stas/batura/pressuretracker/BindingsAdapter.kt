@@ -27,6 +27,11 @@ fun TextView.rainPowBind(pressure: Pressure) {
     text = pressure.rainPower.toString()
 }
 
+@BindingAdapter("altBind")
+fun TextView.alt(pressure: Pressure) {
+    text = pressure.altitude.toString()
+}
+
 //@BindingAdapter("timeRainBind")
 //fun TextView.timeRainBind(rain: Rain) {
 //    val formatter = SimpleDateFormat("dd/MM hh:mm");

@@ -34,6 +34,7 @@ import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.rx.chess.ChessClockRx
 import stas.batura.pressuretracker.rx.chess.ChessStateChageListner
+import stas.batura.pressuretracker.rx.rxZipper.Container
 import stas.batura.pressuretracker.rx.rxZipper.Zipper
 import stas.batura.pressuretracker.utils.getCurrentDayBegin
 import stas.batura.pressuretracker.utils.getCurrentDayEnd
@@ -109,13 +110,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var lastAlt: Float = 0.0f
 
-    var stringObservable1 = Observable.just("String")
-    var stringObservable2 = Observable.just("String")
-
-
-    private val consumer = object : Consumer<String> {
-        override fun accept(t: String?) {
+    private val consumer = object : Consumer<Container> {
+        override fun accept(t: Container?) {
             println(t)
+            savePressureValue(t!!.pressure, t!!.altitude)
         }
     }
 
@@ -176,8 +174,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     /**
      * saving value in DB
      */
-    private fun savePressureValue(pressure: Float) {
-        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastPower)
+    private fun savePressureValue(pressure: Float, altitude: Float) {
+        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastPower, altitude)
         Log.d(TAG, "savePressureValue: " + pressure)
         repository.insertPressure(roomPre)
     }
@@ -193,10 +191,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             val pressure = event.values
             unregisterListn()
 
-            zipper.generatePress(pressure[0].toInt())
+            zipper.generatePress(pressure[0])
 //            zipper.generObserv()
 
-            savePressureValue(pressure[0])
+//            savePressureValue(pressure[0])
         }
     }
 
@@ -210,7 +208,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 sensorManager.registerListener(this, light, 100000)
             }
         } else {
-            savePressureValue(1000.1f)
+            savePressureValue(1000.1f, 10.0f)
         }
     }
 
@@ -379,7 +377,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
 
         fun testRx() {
-            this@PressureService.testRx()
+//            this@PressureService.testRx()
         }
     }
 
@@ -440,7 +438,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             val initTime = data[0].time
             for (pressure in data) {
                 fileWriter!!.append(getTimeInHours((pressure.time - initTime).toInt()).toString() +
-                        " " + pressure.pressure + " " + pressure.rainPower + "\n")
+                        " " + pressure.pressure + " " + pressure.rainPower + " " + pressure.altitude +"\n")
             }
             fileWriter!!.close()
         }
@@ -472,43 +470,42 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                     + location.longitude)
                     ioScope.launch {
                         lastAlt = location!!.altitude.toFloat()
-                        zipper.generateAltit(location!!.altitude.toString())
+                        zipper.generateAltit(lastAlt)
                         zipper.generObserv()
                     }
                 }
     }
 
-    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {
-        override fun onNmeaReceived(timestamp: Long, nmea: String?) {
-            parseNmeaString(nmea!!)
-        }
-    }
-
-    private val nmaListn: OnNmeaMessageListener = object : OnNmeaMessageListener {
-        override fun onNmeaMessage(message: String?, timestamp: Long) {
-            parseNmeaString(message!!)
-        }
-    }
-
-    private fun testRx() {
-        zipper.generatePress(1)
-        zipper.generateAltit("1")
-        zipper.generObserv()
-    }
-
-
-    private fun parseNmeaString(line: String) {
-        if (line.startsWith("$")) {
-            val tokens = line.split(",".toRegex()).toTypedArray()
-            val type = tokens[0]
-
-            // Parse altitude above sea level, Detailed description of NMEA string here http://aprs.gids.nl/nmea/#gga
-            if (type.startsWith("\$GPGGA")) {
-                if (!tokens[9].isEmpty()) {
-                    val alt = tokens[9].toDouble()
-                }
-            }
-        }
-    }
+//    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {
+//        override fun onNmeaReceived(timestamp: Long, nmea: String?) {
+//            parseNmeaString(nmea!!)
+//        }
+//    }
+//
+//    private val nmaListn: OnNmeaMessageListener = object : OnNmeaMessageListener {
+//        override fun onNmeaMessage(message: String?, timestamp: Long) {
+//            parseNmeaString(message!!)
+//        }
+//    }
+//    private fun testRx() {
+//        zipper.generatePress(1)
+//        zipper.generateAltit("1")
+//        zipper.generObserv()
+//    }
+//
+//
+//    private fun parseNmeaString(line: String) {
+//        if (line.startsWith("$")) {
+//            val tokens = line.split(",".toRegex()).toTypedArray()
+//            val type = tokens[0]
+//
+//            // Parse altitude above sea level, Detailed description of NMEA string here http://aprs.gids.nl/nmea/#gga
+//            if (type.startsWith("\$GPGGA")) {
+//                if (!tokens[9].isEmpty()) {
+//                    val alt = tokens[9].toDouble()
+//                }
+//            }
+//        }
+//    }
 
 }
