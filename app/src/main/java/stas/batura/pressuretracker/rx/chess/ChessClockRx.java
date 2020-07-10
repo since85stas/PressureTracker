@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class ChessClockRx {
@@ -36,6 +37,7 @@ public class ChessClockRx {
             isRunning = true;
             mSubscription = initChessClockObserver().
                     subscribeOn(Schedulers.io()).
+                    observeOn(AndroidSchedulers.mainThread()).
                     onBackpressureBuffer().
                     subscribe(new ChessClockSubscriberBold(listner,interval));
         } else {

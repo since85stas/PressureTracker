@@ -191,6 +191,9 @@ class GraphFragment: Fragment() {
                     lastPower = pressure.rainPower
                     presuresList.add(pressure)
                 }
+                if (presuresList.size > 0) {
+                    linesList.add(presuresList)
+                }
             }
         }
 

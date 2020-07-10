@@ -73,7 +73,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in milliseconds
-    private val INTERVAL = 60L * 5
+    private val INTERVAL = 60L * 1
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -121,6 +121,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private val consumer = object : Consumer<Container> {
         override fun accept(t: Container?) {
+            Log.d(TAG, "accept: consum")
             println(t)
             savePressureValue(t!!.pressure, t!!.altitude)
         }
@@ -272,6 +273,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     fun combineData() {
+        Log.d(TAG, "combineData: ")
         registerListn()
         getLocationNew()
     }
@@ -313,14 +315,14 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      */
     private fun getIconId(): Int {
         when (lastPower) {
-            0 -> return R.drawable.icon_0
-            1 -> return R.drawable.icon_1
-            2 -> return R.drawable.icon_2
-            3 -> return R.drawable.icon_3
-            4 -> return R.drawable.icon_4
-            5 -> return R.drawable.icon_5
+            0 -> return R.drawable.icon_n0
+            1 -> return R.drawable.icon_n1
+            2 -> return R.drawable.icon_n2
+            3 -> return R.drawable.icon_n3
+            4 -> return R.drawable.icon_n4
+            5 -> return R.drawable.icon_n5
         }
-        return R.drawable.icon_0
+        return R.drawable.icon_n0
     }
 
     /**
@@ -490,6 +492,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 }
     }
 
+    private var locationCount = 0
+
     @SuppressLint("MissingPermission")
     fun getLocationNew() {
         locationRequest = LocationRequest.create()
@@ -500,12 +504,26 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             override fun onLocationResult(locationResult: LocationResult?) {
                 super.onLocationResult(locationResult)
                 if (locationResult != null) {
-                    fusedLocationClient.removeLocationUpdates(locationCallback)
-                    ioScope.launch {
-                        lastAlt = locationResult.lastLocation.altitude.toFloat()
-                        zipper.generateAltit(lastAlt)
-                        zipper.generObserv()
+                    Log.d(TAG, "onLocationResult: count=" + locationCount)
+                    locationCount ++
+                    var tempalt = locationResult.lastLocation.altitude.toFloat()
+                    if (tempalt > 0.0f || locationCount > 5) {
+                        if (tempalt == 0.0f) {
+                            tempalt = lastAlt
+                            Log.d(TAG, "onLocationResult: old val")
+                        } else {
+                            Log.d(TAG, "onLocationResult: new val")
+                            lastAlt = tempalt
+                        }
+                        locationCount = 0
+                        fusedLocationClient.removeLocationUpdates(locationCallback)
+                        ioScope.launch {
+//                            lastAlt = locationResult.lastLocation.altitude.toFloat()
+                            zipper.generateAltit(tempalt)
+                            zipper.generObserv()
+                        }
                     }
+
                 }
                 //Location received
             }

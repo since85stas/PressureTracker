@@ -34,6 +34,7 @@ public class ChessClockSubscriberBold extends Subscriber<Long> {
 
     @Override
     public void onError(Throwable e) {
+
         Log.d(TAG, "onError: ");
     }
 
