@@ -88,6 +88,12 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
         }
     }
 
+    fun combibeData() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.savePressure()
+        }
+    }
+
     fun testSave() {
         if (playerServiceBinder != null) {
             playerServiceBinder!!.testWrite()

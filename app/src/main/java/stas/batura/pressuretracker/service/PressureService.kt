@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.service
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,7 +12,9 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.*
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
@@ -21,13 +24,15 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.functions.Consumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import rx.Observable
 import stas.batura.pressuretracker.MainActivity
 import stas.batura.pressuretracker.R
 import stas.batura.pressuretracker.data.IRep
@@ -110,6 +115,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var lastAlt: Float = 0.0f
 
+    var locationCallback: LocationCallback? = null
+    var locationRequest: LocationRequest? = null
+//    var fusedLocationClient: FusedLocationProviderClient? = null
+
     private val consumer = object : Consumer<Container> {
         override fun accept(t: Container?) {
             println(t)
@@ -176,7 +185,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      */
     private fun savePressureValue(pressure: Float, altitude: Float) {
         val roomPre = Pressure(pressure, System.currentTimeMillis(), lastPower, altitude)
-        Log.d(TAG, "savePressureValue: " + pressure)
+        Log.d(TAG, "savePressureValue: " + pressure +" " + altitude)
         repository.insertPressure(roomPre)
     }
 
@@ -208,7 +217,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 sensorManager.registerListener(this, light, 100000)
             }
         } else {
-            savePressureValue(1000.1f, 10.0f)
+//            savePressureValue(1000.1f, 10.0f)
+            zipper.generatePress(1000.0f)
         }
     }
 
@@ -261,9 +271,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
     }
 
-    private fun combineData() {
+    fun combineData() {
         registerListn()
-        getLocation()
+        getLocationNew()
     }
 
     /**
@@ -363,8 +373,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
 
         fun savePressure() {
-            this@PressureService.registerListn()
-            this@PressureService.getLocation()
+            this@PressureService.combineData()
             return
         }
 
@@ -373,7 +382,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
 
         fun testLocation() {
-            this@PressureService.getLocation()
+            this@PressureService.getLocationNew()
         }
 
         fun testRx() {
@@ -433,16 +442,21 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
-        Log.d(TAG, "writeDataToFile: begin size=" + data.size)
-        if (data.size  > 0) {
-            val initTime = data[0].time
-            for (pressure in data) {
-                fileWriter!!.append(getTimeInHours((pressure.time - initTime).toInt()).toString() +
-                        " " + pressure.pressure + " " + pressure.rainPower + " " + pressure.altitude +"\n")
+        if (data != null) {
+
+            Log.d(TAG, "writeDataToFile: begin size=" + data.size)
+            if (data.size > 0) {
+                val initTime = data[0].time
+                for (pressure in data) {
+                    fileWriter!!.append(getTimeInHours((pressure.time - initTime).toInt()).toString() +
+                            " " + pressure.pressure + " " + pressure.rainPower + " " + pressure.altitude + "\n")
+                }
+                fileWriter!!.close()
             }
-            fileWriter!!.close()
+            Log.d(TAG, "writeDataToFile: close file")
+        } else {
+            Log.d(TAG, "writeDataToFile: null data")
         }
-        Log.d(TAG, "writeDataToFile: close file")
     }
 
     private fun createTxtFile(fileName: String): FileWriter? {
@@ -469,11 +483,38 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                     Log.d(TAG, "getLocation: " + location!!.altitude + " " + location.latitude + " "
                     + location.longitude)
                     ioScope.launch {
-                        lastAlt = location!!.altitude.toFloat()
+                        lastAlt = location.altitude.toFloat()
                         zipper.generateAltit(lastAlt)
                         zipper.generObserv()
                     }
                 }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getLocationNew() {
+        locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(30 * 1000.toLong())
+                .setFastestInterval(5 * 1000.toLong())
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                super.onLocationResult(locationResult)
+                if (locationResult != null) {
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                    ioScope.launch {
+                        lastAlt = locationResult.lastLocation.altitude.toFloat()
+                        zipper.generateAltit(lastAlt)
+                        zipper.generObserv()
+                    }
+                }
+                //Location received
+            }
+        }
+//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+//            return
+//        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
 //    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {

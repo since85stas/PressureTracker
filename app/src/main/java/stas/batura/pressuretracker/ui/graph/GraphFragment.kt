@@ -179,16 +179,18 @@ class GraphFragment: Fragment() {
 
         var count = 0
         var presuresList = mutableListOf<Pressure>()
-        var lastPower = list[0].rainPower
-        for (pressure in list) {
-            if (pressure.rainPower == lastPower) {
+        if (list.size > 0 ) {
+            var lastPower = list[0].rainPower
+            for (pressure in list) {
+                if (pressure.rainPower == lastPower) {
 //                val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
-                presuresList.add(pressure)
-            } else {
-                linesList.add(presuresList)
-                presuresList = mutableListOf<Pressure>()
-                lastPower = pressure.rainPower
-                presuresList.add(pressure)
+                    presuresList.add(pressure)
+                } else {
+                    linesList.add(presuresList)
+                    presuresList = mutableListOf<Pressure>()
+                    lastPower = pressure.rainPower
+                    presuresList.add(pressure)
+                }
             }
         }
 
