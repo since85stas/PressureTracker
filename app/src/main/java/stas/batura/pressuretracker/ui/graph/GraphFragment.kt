@@ -152,15 +152,17 @@ class GraphFragment: Fragment() {
         graphViewModel.pressList.observe(viewLifecycleOwner, Observer {
 
             if (it != null) {
-//                drawLine(prepareData(it))
+
                 graph.removeAllSeries()
-                val lines = prepareData(it)
-                for(line in lines) {
-                    drawLine(line)
-                }
-                graph.rootView
-                graph.viewport.isScalable = true
-                graph.viewport.setScalableY(true)
+                drawOld(parseDataOld(it))
+
+//                val lines = prepareData(it)
+//                for(line in lines) {
+//                    drawLine(line)
+//                }
+//                graph.rootView
+//                graph.viewport.isScalable = true
+//                graph.viewport.setScalableY(true)
             }
 
         })
@@ -225,8 +227,23 @@ class GraphFragment: Fragment() {
         graph.addSeries(series)
     }
 
+    private fun drawOld(array: Array<DataPoint>) {
+        val series: LineGraphSeries<DataPoint> = LineGraphSeries(array)
+//        series.color = getColor()
+        graph.addSeries(series)
+    }
+
     private fun parseData(list: List<Pressure>):  Array<DataPoint>{
         var count = 0
+        var listM = mutableListOf<DataPoint>()
+        for (pressure in list) {
+            val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
+            listM.add(data)
+        }
+        return listM.toTypedArray()
+    }
+
+    private fun parseDataOld(list: List<Pressure>):  Array<DataPoint>{
         var listM = mutableListOf<DataPoint>()
         for (pressure in list) {
             val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())

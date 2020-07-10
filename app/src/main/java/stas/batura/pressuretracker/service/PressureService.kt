@@ -73,7 +73,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in milliseconds
-    private val INTERVAL = 60L * 1
+    private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
