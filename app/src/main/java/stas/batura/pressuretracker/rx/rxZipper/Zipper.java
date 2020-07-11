@@ -44,6 +44,9 @@ public class Zipper {
     public void generObserv() {
         Observable.zip(pressureObs, altitObs, mergeEmittedItems())
                 .subscribe(consumer);
+
+        altitObs = Observable.empty();
+        pressureObs = Observable.empty();
     }
 
     @NonNull

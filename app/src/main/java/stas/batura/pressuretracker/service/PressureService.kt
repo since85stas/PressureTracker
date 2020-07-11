@@ -73,7 +73,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in seconds
-    private val INTERVAL = 30L * 1
+    private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -510,8 +510,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         // creating request
         locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10 * 1000.toLong())
-                .setFastestInterval(5 * 1000.toLong())
+                .setInterval(60 * 1000.toLong())
+                .setFastestInterval(15 * 1000.toLong())
 
         isLocatRecieved = false
 

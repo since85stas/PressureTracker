@@ -2,10 +2,12 @@ package stas.batura.pressuretracker.ui.graph
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -14,6 +16,7 @@ import androidx.navigation.findNavController
 import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import com.jjoe64.graphview.series.PointsGraphSeries
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.graph_fragment.*
 import stas.batura.pressuretracker.MainViewModel
@@ -76,17 +79,17 @@ class GraphFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        graph.gridLabelRenderer.labelFormatter = object : DefaultLabelFormatter() {
-            override fun formatLabel(value: Double, isValueX: Boolean): String {
-                return if (isValueX) {
-                    // show normal x values
-                    ""
-                } else {
-                    // show currency for y values
-                    super.formatLabel(value, isValueX)
-                }
-            }
-        }
+//        graph.gridLabelRenderer.labelFormatter = object : DefaultLabelFormatter() {
+//            override fun formatLabel(value: Double, isValueX: Boolean): String {
+//                return if (isValueX) {
+//                    // show normal x values
+//                    ""
+//                } else {
+//                    // show currency for y values
+//                    super.formatLabel(value, isValueX)
+//                }
+//            }
+//        }
 
         radioGroup = view.findViewById<RadioGroup>(R.id.radio_group)
 
@@ -159,7 +162,9 @@ class GraphFragment: Fragment() {
             if (it != null) {
 
                 graph.removeAllSeries()
-                drawOld(parseDataOld(it))
+                val newList = shiftTime(it)
+                drawOld(newList, getRainList(newList))
+
 
 //                val lines = prepareData(it)
 //                for(line in lines) {
@@ -171,6 +176,36 @@ class GraphFragment: Fragment() {
             }
 
         })
+    }
+
+    private fun shiftTime(list: List<Pressure>): List<Pressure> {
+        if (list.size > 0) {
+            val initVal = list[0].time
+            for (pressure in list) {
+                val newPress = pressure.time - initVal
+                pressure.time = newPress
+            }
+        }
+        return list
+    }
+
+
+    private fun getRainList(list: List<Pressure>): List<List<Pressure>> {
+        val rainList = mutableListOf<List<Pressure>>()
+        var powerList = mutableListOf<Pressure>()
+
+        var pow = 1
+        for (i in pow..5) {
+            for (pressure in list) {
+                if (pressure.rainPower == pow) {
+                    powerList.add(pressure)
+                }
+            }
+            rainList.add(powerList)
+            powerList = mutableListOf<Pressure>()
+            pow += 1
+        }
+        return rainList
     }
 
     private fun removeObservers() {
@@ -232,20 +267,54 @@ class GraphFragment: Fragment() {
         graph.addSeries(series)
     }
 
-    private fun drawOld(array: Array<DataPoint>) {
-        val series: LineGraphSeries<DataPoint> = LineGraphSeries(array)
-//        series.color = getColor()
-        graph.addSeries(series)
+    private fun drawOld(alllist: List<Pressure>, rainlist: List<List<Pressure>>) {
+        val allpoints = parseDataOld(alllist)
+        val series: LineGraphSeries<DataPoint> = LineGraphSeries(allpoints)
+        try{
+            graph.addSeries(series)
+        } catch (e: Exception) {
+            Log.d(TAG, "drawOld: " + e)
+            Toast.makeText(requireContext(), "Error graph values", Toast.LENGTH_LONG)
+                .show()
+        }
+
+        if (rainlist.size > 0) {
+            for (list in rainlist) {
+                if (list.size > 0) {
+                    val ponts = parseDataOld(list)
+                    var pointSeries = PointsGraphSeries<DataPoint>(ponts)
+                    pointSeries.size = 5f
+
+                    pointSeries.color = getColor(list[0])
+                    try {
+                        graph.addSeries(pointSeries)
+                    } catch (e: Exception) {
+                        Log.d(TAG, "drawOld: " + e)
+                        Toast.makeText(requireContext(), "Error graph values", Toast.LENGTH_LONG)
+                                .show()
+                    }
+                }
+            }
+            var viewpost = graph.viewport
+            viewpost.isScrollable = true
+            viewpost.setScalableY(true)
+            viewpost.isScalable = true
+            viewpost.isXAxisBoundsManual = true
+            if (allpoints.size > 0) {
+                viewpost.setMinX(allpoints[0].x)
+                viewpost.setMaxX(allpoints[allpoints.size - 1].x)
+            }
+            viewpost.scrollToEnd()
+        }
+
     }
 
     private fun parseData(list: List<Pressure>):  Array<DataPoint>{
         var count = 0
         var listM = mutableListOf<DataPoint>()
         if(list.size > 0) {
-            val firstTime = list.get(0).time
-
             for (pressure in list) {
-                val timeMin = ((pressure.time - firstTime)/(1000*60)).toInt()
+                val timeMin = ((pressure.time)/(1000*60)).toInt()
                 val data = DataPoint(timeMin.toDouble(), pressure.pressure.toDouble())
                 listM.add(data)
             }
@@ -256,14 +325,19 @@ class GraphFragment: Fragment() {
     private fun parseDataOld(list: List<Pressure>):  Array<DataPoint>{
         var listM = mutableListOf<DataPoint>()
         if(list.size > 0) {
-            val firstTime = list.get(0).time
+//            val firstTime = list.get(0).time
             for (pressure in list) {
-                val timeMin = ((pressure.time - firstTime)/(1000))
-                val data = DataPoint(timeMin.toDouble(), pressure.pressure.toDouble())
+                val timeMin = ((pressure.time)/(1000*60))
+                val data = DataPoint(timeMin.toDouble(), getNullAltPressure(pressure.pressure, pressure.altitude))
                 listM.add(data)
             }
         }
         return listM.toTypedArray()
+    }
+
+    private fun getNullAltPressure(pressure: Float, altitude: Float): Double {
+        val nullPress = pressure/ (Math.pow(10.toDouble(), -0.06*(altitude/1000.0f) ))
+        return nullPress;
     }
 
     private fun getColor(pressure: Pressure): Int {
