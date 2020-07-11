@@ -94,44 +94,49 @@ class GraphFragment: Fragment() {
             when (checkedId) {
 
                 R.id.rain_0 -> {
-                    if (isStarted) {
+
                         graphViewModel.saveRainPower(0)
                         mainViewModel.setServiceRain(0)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_1 -> {
-                    if (isStarted) {
+
                         graphViewModel.saveRainPower(1)
                         mainViewModel.setServiceRain(1)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_2 -> {
-                    if (isStarted) {
                         graphViewModel.saveRainPower(2)
                         mainViewModel.setServiceRain(2)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_3 -> {
-                    if (isStarted) {
+
                         graphViewModel.saveRainPower(3)
                         mainViewModel.setServiceRain(3)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_4 -> {
-                    if (isStarted) {
+
                         graphViewModel.saveRainPower(4)
                         mainViewModel.setServiceRain(4)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_5 -> {
-                    if (isStarted) {
+
                         graphViewModel.saveRainPower(5)
                         mainViewModel.setServiceRain(5)
+                    if (isStarted) {
                         mainViewModel.savePressureValue()
                     }
                 }
@@ -236,18 +241,27 @@ class GraphFragment: Fragment() {
     private fun parseData(list: List<Pressure>):  Array<DataPoint>{
         var count = 0
         var listM = mutableListOf<DataPoint>()
-        for (pressure in list) {
-            val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
-            listM.add(data)
+        if(list.size > 0) {
+            val firstTime = list.get(0).time
+
+            for (pressure in list) {
+                val timeMin = ((pressure.time - firstTime)/(1000*60)).toInt()
+                val data = DataPoint(timeMin.toDouble(), pressure.pressure.toDouble())
+                listM.add(data)
+            }
         }
         return listM.toTypedArray()
     }
 
     private fun parseDataOld(list: List<Pressure>):  Array<DataPoint>{
         var listM = mutableListOf<DataPoint>()
-        for (pressure in list) {
-            val data = DataPoint(pressure.time.toDouble(), pressure.pressure.toDouble())
-            listM.add(data)
+        if(list.size > 0) {
+            val firstTime = list.get(0).time
+            for (pressure in list) {
+                val timeMin = ((pressure.time - firstTime)/(1000))
+                val data = DataPoint(timeMin.toDouble(), pressure.pressure.toDouble())
+                listM.add(data)
+            }
         }
         return listM.toTypedArray()
     }

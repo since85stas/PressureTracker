@@ -4,6 +4,9 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: "androidx.navigation.safeargs.kotlin"
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
 
 android {
     compileSdkVersion 29
@@ -86,7 +89,7 @@ dependencies {
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_jetpack"
     kapt "androidx.hilt:hilt-compiler:$hilt_jetpack"
 
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
+//    implementation 'com.github.bumptech.glide:glide:4.10.0'
 
     // RxJava
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
@@ -103,4 +106,6 @@ dependencies {
     implementation 'com.github.TutorialsAndroid:FilePicker:v8.0.19'
 
     implementation 'com.google.android.gms:play-services-location:15.0.1'
+
+//     'com.google.firebase:firebase-crashlytics-gradle:2.2.0'
 }

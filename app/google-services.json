@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "968736263777",
+    "firebase_url": "https://pressuretracker-8fdbf.firebaseio.com",
+    "project_id": "pressuretracker-8fdbf",
+    "storage_bucket": "pressuretracker-8fdbf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:968736263777:android:4cb055b5d562508982e420",
+        "android_client_info": {
+          "package_name": "stas.batura.pressuretracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "968736263777-mv3t44johltasqq66ca9eqp7554t81j7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0nvps9DPv1y6Ad-IC4fLT4HAAgR-07I8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "968736263777-mv3t44johltasqq66ca9eqp7554t81j7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -72,8 +72,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private val CHANNEL_ID = "PressCh"
 
-    // interval between saves in milliseconds
-    private val INTERVAL = 60L * 5
+    // interval between saves in seconds
+    private val INTERVAL = 30L * 1
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -104,14 +104,6 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     // begin of last day date
     private lateinit var lastDayBegin: Calendar
-
-    // The minimum distance to change Updates in meters
-    private val MIN_DISTANCE_CHANGE_FOR_UPDATES: Long = 10 // 10 meters
-
-
-    // The minimum time between updates in milliseconds
-    private val MIN_TIME_BW_UPDATES = 1000 * 60 * 1 // 1 minute
-            .toFloat()
 
     private var lastAlt: Float = 0.0f
 
@@ -163,6 +155,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "onDestroy: ")
         unregisterListn()
         stopClock()
     }
@@ -185,7 +178,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * saving value in DB
      */
     private fun savePressureValue(pressure: Float, altitude: Float) {
-        val roomPre = Pressure(pressure, System.currentTimeMillis(), lastPower, altitude)
+        val mmPres = pressure*0.750064f;
+        val roomPre = Pressure(mmPres, System.currentTimeMillis(), lastPower, altitude)
         Log.d(TAG, "savePressureValue: " + pressure +" " + altitude)
         repository.insertPressure(roomPre)
     }
@@ -200,8 +194,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         if (event != null) {
             val pressure = event.values
             unregisterListn()
-
-            zipper.generatePress(pressure[0])
+            if (pressure.size > 0) {
+                zipper.generatePress(pressure[0])
+            }
 //            zipper.generObserv()
 
 //            savePressureValue(pressure[0])
@@ -264,6 +259,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
 //            registerListn()
+            if (!isLocatRecieved) {
+                saveFakeLastLocationValue()
+            }
+
             combineData()
             if (checkNextDay()) {
 //                addObservers()
@@ -387,6 +386,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             this@PressureService.getLocationNew()
         }
 
+        fun updateNotif() {
+            this@PressureService.updateNotification()
+        }
+
         fun testRx() {
 //            this@PressureService.testRx()
         }
@@ -440,6 +443,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     private fun checkNextDay(): Boolean {
+        Log.d(TAG, "checkNextDay: ")
         return Calendar.getInstance().after(getCurrentDayEnd())
     }
 
@@ -494,12 +498,24 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var locationCount = 0
 
+    private var isLocatRecieved = false
+
+    /**
+     * fun to get an Location from gps
+     */
     @SuppressLint("MissingPermission")
     fun getLocationNew() {
+        Log.d(TAG, "getLocationNew: start")
+
+        // creating request
         locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(30 * 1000.toLong())
+                .setInterval(10 * 1000.toLong())
                 .setFastestInterval(5 * 1000.toLong())
+
+        isLocatRecieved = false
+
+        // creating callback
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 super.onLocationResult(locationResult)
@@ -517,6 +533,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                         }
                         locationCount = 0
                         fusedLocationClient.removeLocationUpdates(locationCallback)
+
+                        isLocatRecieved = true
+
                         ioScope.launch {
 //                            lastAlt = locationResult.lastLocation.altitude.toFloat()
                             zipper.generateAltit(tempalt)
@@ -524,15 +543,24 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                         }
                     }
 
+                } else {
+                    Log.d(TAG, "onLocationResult: location is null")
                 }
                 //Location received
             }
         }
-//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
-//            return
-//        }
+
+        // getting location request
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+    }
+
+    private fun saveFakeLastLocationValue() {
+        Log.d(TAG, "saveFakeLastLocationValue: ")
+        isLocatRecieved = true
+        ioScope.launch {
+            zipper.generateAltit(lastAlt)
+            zipper.generObserv()
+        }
     }
 
 //    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {

@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
-        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+//        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         setContentView(R.layout.main_activity);
 //        setContentView(R.layout.main_activity);
@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] array = new String[2];
                 array[0] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
                 array[1] = Manifest.permission.ACCESS_FINE_LOCATION;
+//                array[1] = Manifest.permission.LoC
                 this.requestPermissions(
                         array,
                         FilePickerDialog.EXTERNAL_READ_PERMISSION_GRANT

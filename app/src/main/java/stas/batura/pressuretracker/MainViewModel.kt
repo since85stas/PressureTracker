@@ -42,6 +42,8 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
                 override fun onServiceConnected(name: ComponentName, service: IBinder) {
                     try {
                         playerServiceBinder = service as PressureService.PressureServiceBinder
+
+                        updateNotif()
                     } catch (e: RemoteException) {
                         Log.d(TAG, "onServiceConnected: " + e);
                     }
@@ -110,5 +112,15 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
         if (playerServiceBinder != null) {
             playerServiceBinder!!.testRx()
         }
+    }
+
+    fun updateNotif() {
+        if (playerServiceBinder != null) {
+            playerServiceBinder!!.updateNotif()
+        }
+    }
+
+    fun crash() {
+        throw RuntimeException("Test Crash");
     }
 }
