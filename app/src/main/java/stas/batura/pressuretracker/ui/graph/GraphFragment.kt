@@ -302,7 +302,8 @@ class GraphFragment: Fragment() {
             viewpost.isScalable = true
             viewpost.isXAxisBoundsManual = true
             if (allpoints.size > 0) {
-                viewpost.setMinX(allpoints[0].x)
+//                viewpost.setMinX(allpoints[0].x)
+                viewpost.setMinX(allpoints[allpoints.size - 1].x - 180)
                 viewpost.setMaxX(allpoints[allpoints.size - 1].x)
             }
             viewpost.scrollToEnd()

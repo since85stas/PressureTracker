@@ -71,7 +71,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in seconds
-    private val INTERVAL = 60L * 1
+    private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -103,7 +103,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     // begin of last day date
     private lateinit var lastDayBegin: Calendar
 
-    private var lastAlt: Float = 0.0f
+    private var lastAlt: Float = 170f
 
     var locationCallback: LocationCallback? = null
     var locationRequest: LocationRequest? = null
@@ -137,6 +137,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
 //        val beginTime = lastDayBegin.timeInMillis
 //        val endTime = getCurrentDayEnd(lastDayBegin).timeInMillis
+        isLocatRecieved = true
         Log.d(TAG, "onCreate: service")
     }
 
@@ -197,6 +198,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             unregisterListn()
             if (pressure.size > 0) {
                 zipper.generatePress(pressure[0])
+
+                zipper.generObserv()
             }
 //            zipper.generObserv()
 
@@ -216,6 +219,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         } else {
 //            savePressureValue(1000.1f, 10.0f)
             zipper.generatePress(1000.0f)
+
+            zipper.generObserv()
         }
     }
 
@@ -274,7 +279,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     fun combineData() {
         Log.d(TAG, "combineData: ")
-        registerListn()
+//        registerListn()
         getLocationNew()
     }
 
@@ -406,21 +411,6 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     /**
      * adding observers for presures
      */
-//    fun addObservers() {
-//        repository.getPressuresInIntervalLive(lastDayBegin.timeInMillis,
-//                getCurrentDayEnd(lastDayBegin).timeInMillis)
-//                .observe( this, Observer {
-//                    Log.d(TAG, "addObservers: getting day pressure")
-//                    ioScope.launch {
-//                        Log.d(TAG, "addObservers: size write =" + it.size)
-//                        val formatter = SimpleDateFormat("dd.MM.YY ");
-//                        val dateString = formatter.format( Date(lastDayBegin.timeInMillis)) + ".txt";
-//                        writeDataToFile(createTxtFile(dateString), it)
-//                        lastDayBegin = getCurrentDayBegin()
-//                    }
-//
-//        })
-//    }
     fun getPressrsForLastday() {
         ioScope.launch {
             val end = getCurrentDayEnd(lastDayBegin)
@@ -446,6 +436,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         getPressrsForLastday()
     }
 
+    /**
+     * check if we pass to next day
+     */
     private fun checkNextDay(): Boolean {
         val res = Calendar.getInstance().after(getCurrentDayEnd(lastDayBegin))
         Log.d(TAG, "checkNextDay: " + res)
@@ -454,6 +447,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         return res
     }
 
+    /**
+     * writing data to file
+     */
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
         if (data != null) {
 
@@ -472,6 +468,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
     }
 
+    /**
+     * creating a txt file on sdcard
+     */
     private fun createTxtFile(fileName: String): FileWriter? {
         return try {
             // create a File object for the parent directory
@@ -489,23 +488,13 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun getLocation() {
-        fusedLocationClient.lastLocation
-                .addOnSuccessListener { location : Location? ->
-                    Log.d(TAG, "getLocation: " + location!!.altitude + " " + location.latitude + " "
-                    + location.longitude)
-                    ioScope.launch {
-                        lastAlt = location.altitude.toFloat()
-                        zipper.generateAltit(lastAlt)
-                        zipper.generObserv()
-                    }
-                }
-    }
-
     private var locationCount = 0
 
     private var isLocatRecieved = false
+    
+    private var locationsList = mutableListOf<LocationResult>()
+
+    private var altList = mutableListOf<Float>()
 
     /**
      * fun to get an Location from gps
@@ -517,9 +506,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         // creating request
         locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(15 * 1000.toLong())
-                .setMaxWaitTime(15*4)
-                .setFastestInterval(5 * 1000.toLong())
+                .setInterval(20 * 1000.toLong())
+                .setMaxWaitTime(20*2*1000.toLong())
+                .setFastestInterval(20 * 1000.toLong())
+                .setNumUpdates(4)
 
         isLocatRecieved = false
 
@@ -528,6 +518,42 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             override fun onLocationResult(locationResult: LocationResult?) {
                 super.onLocationResult(locationResult)
                 if (locationResult != null) {
+                    locationsList.add(locationResult)
+
+                    altList.add(locationResult.lastLocation.altitude.toFloat())
+                    
+                    if (locationCount > 2) {
+                        Log.d(TAG, "onLocationResult: ")
+                        val altListPerf = mutableListOf<Float>()
+
+                        for(altitute in altList) {
+                            Log.d(TAG, "onLocationResult: alt= " + altitute)
+                            if (altitute > 1.0f && (altitute-lastAlt) < 60.0f) {
+                                altListPerf.add(altitute)
+                            }
+                        }
+
+                        var sumAlt = 0.0f
+                        for (altitude in altListPerf) {
+                            sumAlt += altitude
+                        }
+
+                        val com = sumAlt/altListPerf.size.toFloat()
+
+                        isLocatRecieved = true
+
+                        lastAlt = com
+
+                        locationCount = 0
+                        fusedLocationClient.removeLocationUpdates(locationCallback)
+
+                        ioScope.launch {
+                            zipper.generateAltit(com)
+//                            zipper.generObserv()
+                            registerListn()
+                        }
+                    }
+                    
                     Log.d(TAG, "onLocationResult: count=" + locationCount)
                     locationCount ++
                     var tempalt = locationResult.lastLocation.altitude.toFloat()
@@ -537,18 +563,19 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                             Log.d(TAG, "onLocationResult: old val")
                         } else {
                             Log.d(TAG, "onLocationResult: new val")
-                            lastAlt = tempalt
+//                            lastAlt = tempalt
                         }
-                        locationCount = 0
-                        fusedLocationClient.removeLocationUpdates(locationCallback)
+                        
+                        
+//                        locationCount = 0
+//                        fusedLocationClient.removeLocationUpdates(locationCallback)
+                        
+//                        isLocatRecieved = true
 
-                        isLocatRecieved = true
-
-                        ioScope.launch {
-//                            lastAlt = locationResult.lastLocation.altitude.toFloat()
-                            zipper.generateAltit(tempalt)
-                            zipper.generObserv()
-                        }
+//                        ioScope.launch {
+//                            zipper.generateAltit(tempalt)
+//                            zipper.generObserv()
+//                        }
                     }
 
                 } else {
@@ -562,7 +589,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 Log.d(TAG, "onLocationAvailability: ")
             }
         }
-
+        
         // getting location request
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
@@ -575,37 +602,5 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             zipper.generObserv()
         }
     }
-
-//    private val mNmeaListener: GpsStatus.NmeaListener = object : GpsStatus.NmeaListener {
-//        override fun onNmeaReceived(timestamp: Long, nmea: String?) {
-//            parseNmeaString(nmea!!)
-//        }
-//    }
-//
-//    private val nmaListn: OnNmeaMessageListener = object : OnNmeaMessageListener {
-//        override fun onNmeaMessage(message: String?, timestamp: Long) {
-//            parseNmeaString(message!!)
-//        }
-//    }
-//    private fun testRx() {
-//        zipper.generatePress(1)
-//        zipper.generateAltit("1")
-//        zipper.generObserv()
-//    }
-//
-//
-//    private fun parseNmeaString(line: String) {
-//        if (line.startsWith("$")) {
-//            val tokens = line.split(",".toRegex()).toTypedArray()
-//            val type = tokens[0]
-//
-//            // Parse altitude above sea level, Detailed description of NMEA string here http://aprs.gids.nl/nmea/#gga
-//            if (type.startsWith("\$GPGGA")) {
-//                if (!tokens[9].isEmpty()) {
-//                    val alt = tokens[9].toDouble()
-//                }
-//            }
-//        }
-//    }
 
 }
