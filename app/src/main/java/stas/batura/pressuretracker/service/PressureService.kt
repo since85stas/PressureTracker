@@ -23,10 +23,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.*
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.functions.Consumer
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +40,7 @@ import stas.batura.pressuretracker.rx.rxZipper.Container
 import stas.batura.pressuretracker.rx.rxZipper.Zipper
 import stas.batura.pressuretracker.utils.getCurrentDayBegin
 import stas.batura.pressuretracker.utils.getCurrentDayEnd
+import stas.batura.pressuretracker.utils.getTimeFormat
 import stas.batura.pressuretracker.utils.getTimeInHours
 import java.io.File
 import java.io.FileWriter
@@ -73,7 +71,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in seconds
-    private val INTERVAL = 60L * 5
+    private val INTERVAL = 60L * 1
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -115,7 +113,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         override fun accept(t: Container?) {
             Log.d(TAG, "accept: consum")
             println(t)
-            savePressureValue(t!!.pressure, t!!.altitude)
+            savePressureValue(t!!.pressure, t.altitude)
         }
     }
 
@@ -137,6 +135,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
         lastPower = repository.getRainPower().lastPowr
 
+//        val beginTime = lastDayBegin.timeInMillis
+//        val endTime = getCurrentDayEnd(lastDayBegin).timeInMillis
+        Log.d(TAG, "onCreate: service")
     }
 
 
@@ -422,6 +423,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 //    }
     fun getPressrsForLastday() {
         ioScope.launch {
+            val end = getCurrentDayEnd(lastDayBegin)
+            val beginTime = lastDayBegin.timeInMillis
+            val endTime = getCurrentDayEnd(lastDayBegin).timeInMillis
             val res =  repository.getPressuresInInterval(lastDayBegin.timeInMillis,
                 getCurrentDayEnd(lastDayBegin).timeInMillis)
 //            val res = repository.getPressures()
@@ -443,8 +447,11 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     }
 
     private fun checkNextDay(): Boolean {
-        Log.d(TAG, "checkNextDay: ")
-        return Calendar.getInstance().after(getCurrentDayEnd())
+        val res = Calendar.getInstance().after(getCurrentDayEnd(lastDayBegin))
+        Log.d(TAG, "checkNextDay: " + res)
+        Log.d(TAG, "curr date: " + getTimeFormat(Calendar.getInstance()) +
+                " end date" + getTimeFormat(getCurrentDayEnd(lastDayBegin)) )
+        return res
     }
 
     private suspend fun writeDataToFile(fileWriter: FileWriter?, data: List<Pressure>) {
@@ -510,8 +517,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         // creating request
         locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(60 * 1000.toLong())
-                .setFastestInterval(15 * 1000.toLong())
+                .setInterval(15 * 1000.toLong())
+                .setMaxWaitTime(15*4)
+                .setFastestInterval(5 * 1000.toLong())
 
         isLocatRecieved = false
 
@@ -547,6 +555,11 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                     Log.d(TAG, "onLocationResult: location is null")
                 }
                 //Location received
+            }
+
+            override fun onLocationAvailability(p0: LocationAvailability?) {
+                super.onLocationAvailability(p0)
+                Log.d(TAG, "onLocationAvailability: ")
             }
         }
 

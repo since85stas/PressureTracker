@@ -269,8 +269,9 @@ class GraphFragment: Fragment() {
 
     private fun drawOld(alllist: List<Pressure>, rainlist: List<List<Pressure>>) {
         val allpoints = parseDataOld(alllist)
-        val series: LineGraphSeries<DataPoint> = LineGraphSeries(allpoints)
+
         try{
+            val series: LineGraphSeries<DataPoint> = LineGraphSeries(allpoints)
             graph.addSeries(series)
         } catch (e: Exception) {
             Log.d(TAG, "drawOld: " + e)
@@ -281,12 +282,12 @@ class GraphFragment: Fragment() {
         if (rainlist.size > 0) {
             for (list in rainlist) {
                 if (list.size > 0) {
-                    val ponts = parseDataOld(list)
-                    var pointSeries = PointsGraphSeries<DataPoint>(ponts)
-                    pointSeries.size = 5f
-
-                    pointSeries.color = getColor(list[0])
                     try {
+                        val ponts = parseDataOld(list)
+                        var pointSeries = PointsGraphSeries<DataPoint>(ponts)
+                        pointSeries.size = 5f
+
+                        pointSeries.color = getColor(list[0])
                         graph.addSeries(pointSeries)
                     } catch (e: Exception) {
                         Log.d(TAG, "drawOld: " + e)
