@@ -3,6 +3,46 @@ package stas.batura.pressuretracker.utils
 import java.text.SimpleDateFormat
 import java.util.*
 
+val MORN_START = 7
+val MORN_END = 9
+
+val EVN_START = 17
+val EVN_END = 19
+
+fun isWritingOn(): Boolean {
+    val calendar = Calendar.getInstance()
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    if (hour in MORN_START until MORN_END) {
+        return false
+    } else if (hour in EVN_START until EVN_END) {
+        return false
+    } else {
+        return true
+    }
+}
+
+fun isWorkTime(): Boolean {
+    val calendar = Calendar.getInstance()
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    if (hour in MORN_END until EVN_START) {
+        return true
+    } else {
+        return false
+    }
+}
+
+fun isHomeTime(): Boolean {
+    val calendar = Calendar.getInstance()
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    if (hour in 0 until MORN_START) {
+        return true
+    } else if (hour in EVN_END..23){
+        return true
+    } else {
+        return false
+    }
+}
+
 fun getCurrentDayBegin(): Calendar {
     val calendar = Calendar.getInstance()
     calendar.set(Calendar.HOUR_OF_DAY, 0)

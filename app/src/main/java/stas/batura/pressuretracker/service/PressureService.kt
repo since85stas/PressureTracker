@@ -38,10 +38,7 @@ import stas.batura.pressuretracker.rx.chess.ChessClockRx
 import stas.batura.pressuretracker.rx.chess.ChessStateChageListner
 import stas.batura.pressuretracker.rx.rxZipper.Container
 import stas.batura.pressuretracker.rx.rxZipper.Zipper
-import stas.batura.pressuretracker.utils.getCurrentDayBegin
-import stas.batura.pressuretracker.utils.getCurrentDayEnd
-import stas.batura.pressuretracker.utils.getTimeFormat
-import stas.batura.pressuretracker.utils.getTimeInHours
+import stas.batura.pressuretracker.utils.*
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -71,7 +68,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in seconds
-    private val INTERVAL = 60L * 5
+    private val INTERVAL = 60L * 1
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -105,8 +102,12 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var lastAlt: Float = 170f
 
-    var locationCallback: LocationCallback? = null
-    var locationRequest: LocationRequest? = null
+    private var locationCallback: LocationCallback? = null
+
+    private var locationRequest: LocationRequest? = null
+
+    private val HOME_ALT = 168.0f
+    private val WORK_ALT = 160.0f
 //    var fusedLocationClient: FusedLocationProviderClient? = null
 
     private val consumer = object : Consumer<Container> {
@@ -140,7 +141,6 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         isLocatRecieved = true
         Log.d(TAG, "onCreate: service")
     }
-
 
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
@@ -198,12 +198,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             unregisterListn()
             if (pressure.size > 0) {
                 zipper.generatePress(pressure[0])
-
-                zipper.generObserv()
             }
-//            zipper.generObserv()
-
-//            savePressureValue(pressure[0])
         }
     }
 
@@ -219,8 +214,6 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         } else {
 //            savePressureValue(1000.1f, 10.0f)
             zipper.generatePress(1000.0f)
-
-            zipper.generObserv()
         }
     }
 
@@ -264,23 +257,22 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     override fun timeChange(time: Long) {
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
-//            registerListn()
-            if (!isLocatRecieved) {
-                saveFakeLastLocationValue()
-            }
-
-            combineData()
-            if (checkNextDay()) {
-//                addObservers()
-                getPressrsForLastday()
+            if (isHomeTime() || isWorkTime()) {
+                combineData()
+                if (checkNextDay()) {
+                    getPressrsForLastday()
+                }
+            } else {
+                Log.d(TAG, "timeChange: saving off")
             }
         }
     }
 
     fun combineData() {
         Log.d(TAG, "combineData: ")
-//        registerListn()
-        getLocationNew()
+        registerListn()
+//        getLocationNew()
+        saveFakeLastLocationValue()
     }
 
     /**
@@ -311,6 +303,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                         .bigText("Collecting pressure..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(notifyPendingIntent)
+                .setVibrate(longArrayOf(0))
 
         return builder.build()
     }
@@ -349,9 +342,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name: CharSequence = "name"
             val description = "descr"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
+            channel.enableVibration(false)
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -388,9 +382,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             this@PressureService.testWriteFile()
         }
 
-        fun testLocation() {
-            this@PressureService.getLocationNew()
-        }
+//        fun testLocation() {
+//            this@PressureService.getLocationNew()
+//        }
 
         fun updateNotif() {
             this@PressureService.updateNotification()
@@ -563,19 +557,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                             Log.d(TAG, "onLocationResult: old val")
                         } else {
                             Log.d(TAG, "onLocationResult: new val")
-//                            lastAlt = tempalt
                         }
-                        
-                        
-//                        locationCount = 0
-//                        fusedLocationClient.removeLocationUpdates(locationCallback)
-                        
-//                        isLocatRecieved = true
-
-//                        ioScope.launch {
-//                            zipper.generateAltit(tempalt)
-//                            zipper.generObserv()
-//                        }
                     }
 
                 } else {
@@ -596,9 +578,14 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private fun saveFakeLastLocationValue() {
         Log.d(TAG, "saveFakeLastLocationValue: ")
-        isLocatRecieved = true
+        var alt = 0.0f
+        if (isWorkTime()) {
+            alt = WORK_ALT
+        } else if (isHomeTime()) {
+            alt = HOME_ALT
+        }
         ioScope.launch {
-            zipper.generateAltit(lastAlt)
+            zipper.generateAltit(alt)
             zipper.generObserv()
         }
     }
