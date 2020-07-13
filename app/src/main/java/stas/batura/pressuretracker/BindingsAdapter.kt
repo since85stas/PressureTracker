@@ -16,7 +16,7 @@ fun TextView.pressureTextBind(pressure: Pressure) {
 
 @BindingAdapter("timeBind")
 fun TextView.timeBind(pressure: Pressure) {
-    val formatter = SimpleDateFormat("dd/MM hh:mm");
+    val formatter = SimpleDateFormat("dd/MM HH:mm");
     val dateString = formatter.format( Date(pressure.time));
     text = dateString
 //    text = pressure.time.toString()

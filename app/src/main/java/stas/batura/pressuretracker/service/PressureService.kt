@@ -68,7 +68,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     private val CHANNEL_ID = "PressCh"
 
     // interval between saves in seconds
-    private val INTERVAL = 60L * 1
+    private val INTERVAL = 60L * 5
 
     @Inject lateinit var sensorManager: SensorManager
 
@@ -89,7 +89,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     // Declaring a Location Manager
     @Inject lateinit var locationManager: LocationManager
 
-    @Inject lateinit var fusedLocationClient: FusedLocationProviderClient
+//    @Inject lateinit var fusedLocationClient: FusedLocationProviderClient
 
     // chess instance to calculate distance before saves
     private lateinit var chessClockRx: ChessClockRx
@@ -106,8 +106,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var locationRequest: LocationRequest? = null
 
-    private val HOME_ALT = 168.0f
-    private val WORK_ALT = 160.0f
+    private val HOME_ALT = 170.0f
+    private val WORK_ALT = 163.0f
 //    var fusedLocationClient: FusedLocationProviderClient? = null
 
     private val consumer = object : Consumer<Container> {
@@ -118,7 +118,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         }
     }
 
-    val zipper = Zipper(consumer)
+//    val zipper = Zipper(consumer)
 
     @SuppressLint("MissingPermission")
     override fun onCreate() {
@@ -138,7 +138,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
 //        val beginTime = lastDayBegin.timeInMillis
 //        val endTime = getCurrentDayEnd(lastDayBegin).timeInMillis
-        isLocatRecieved = true
+//        isLocatRecieved = true
         Log.d(TAG, "onCreate: service")
     }
 
@@ -180,7 +180,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * saving value in DB
      */
     private fun savePressureValue(pressure: Float, altitude: Float) {
-        val mmPres = pressure*0.750064f;
+        val mmPres = pressure
         val roomPre = Pressure(mmPres, System.currentTimeMillis(), lastPower, altitude)
         Log.d(TAG, "savePressureValue: " + pressure +" " + altitude)
         repository.insertPressure(roomPre)
@@ -197,7 +197,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             val pressure = event.values
             unregisterListn()
             if (pressure.size > 0) {
-                zipper.generatePress(pressure[0])
+//                zipper.generatePress(pressure[0])
+                savePressureValue(pressure[0], saveFakeLastLocationValue())
             }
         }
     }
@@ -212,8 +213,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 sensorManager.registerListener(this, light, 100000)
             }
         } else {
-//            savePressureValue(1000.1f, 10.0f)
-            zipper.generatePress(1000.0f)
+            savePressureValue(1000.1f, 10.0f)
+//            zipper.generatePress(1000.0f)
         }
     }
 
@@ -257,7 +258,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     override fun timeChange(time: Long) {
         Log.d(TAG, "timeChange: " + time)
         if (time == 0L) {
-            if (isHomeTime() || isWorkTime()) {
+            if (true) {
                 combineData()
                 if (checkNextDay()) {
                     getPressrsForLastday()
@@ -272,7 +273,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         Log.d(TAG, "combineData: ")
         registerListn()
 //        getLocationNew()
-        saveFakeLastLocationValue()
+//        saveFakeLastLocationValue()
     }
 
     /**
@@ -301,7 +302,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 .setSmallIcon(getIconId())
                 .setStyle(NotificationCompat.BigTextStyle()
                         .bigText("Collecting pressure..."))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(notifyPendingIntent)
                 .setVibrate(longArrayOf(0))
 
@@ -342,7 +343,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name: CharSequence = "name"
             val description = "descr"
-            val importance = NotificationManager.IMPORTANCE_LOW
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
             channel.enableVibration(false)
@@ -452,7 +453,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
                 val initTime = data[0].time
                 for (pressure in data) {
                     fileWriter!!.append(getTimeInHours((pressure.time - initTime).toInt()).toString() +
-                            " " + pressure.pressure + " " + pressure.rainPower + " " + pressure.altitude + "\n")
+                            " " + pressure.pressure + " " + pressure.rainPower + " " + "\n")
                 }
                 fileWriter!!.close()
             }
@@ -484,7 +485,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
 
     private var locationCount = 0
 
-    private var isLocatRecieved = false
+//    private var isLocatRecieved = false
     
     private var locationsList = mutableListOf<LocationResult>()
 
@@ -493,101 +494,106 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     /**
      * fun to get an Location from gps
      */
-    @SuppressLint("MissingPermission")
-    fun getLocationNew() {
-        Log.d(TAG, "getLocationNew: start")
+//    @SuppressLint("MissingPermission")
+//    fun getLocationNew() {
+//        Log.d(TAG, "getLocationNew: start")
+//
+//        // creating request
+//        locationRequest = LocationRequest.create()
+//                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+//                .setInterval(20 * 1000.toLong())
+//                .setMaxWaitTime(20*2*1000.toLong())
+//                .setFastestInterval(20 * 1000.toLong())
+//                .setNumUpdates(4)
+//
+////        isLocatRecieved = false
+//
+//        // creating callback
+//        locationCallback = object : LocationCallback() {
+//            override fun onLocationResult(locationResult: LocationResult?) {
+//                super.onLocationResult(locationResult)
+//                if (locationResult != null) {
+//                    locationsList.add(locationResult)
+//
+//                    altList.add(locationResult.lastLocation.altitude.toFloat())
+//
+//                    if (locationCount > 2) {
+//                        Log.d(TAG, "onLocationResult: ")
+//                        val altListPerf = mutableListOf<Float>()
+//
+//                        for(altitute in altList) {
+//                            Log.d(TAG, "onLocationResult: alt= " + altitute)
+//                            if (altitute > 1.0f && (altitute-lastAlt) < 60.0f) {
+//                                altListPerf.add(altitute)
+//                            }
+//                        }
+//
+//                        var sumAlt = 0.0f
+//                        for (altitude in altListPerf) {
+//                            sumAlt += altitude
+//                        }
+//
+//                        val com = sumAlt/altListPerf.size.toFloat()
+//
+////                        isLocatRecieved = true
+//
+//                        lastAlt = com
+//
+//                        locationCount = 0
+//                        fusedLocationClient.removeLocationUpdates(locationCallback)
+//
+//                        ioScope.launch {
+////                            zipper.generateAltit(com)
+////                            zipper.generObserv()
+//                            registerListn()
+//                        }
+//                    }
+//
+//                    Log.d(TAG, "onLocationResult: count=" + locationCount)
+//                    locationCount ++
+//                    var tempalt = locationResult.lastLocation.altitude.toFloat()
+//                    if (tempalt > 0.0f || locationCount > 5) {
+//                        if (tempalt == 0.0f) {
+//                            tempalt = lastAlt
+//                            Log.d(TAG, "onLocationResult: old val")
+//                        } else {
+//                            Log.d(TAG, "onLocationResult: new val")
+//                        }
+//                    }
+//
+//                } else {
+//                    Log.d(TAG, "onLocationResult: location is null")
+//                }
+//                //Location received
+//            }
+//
+//            override fun onLocationAvailability(p0: LocationAvailability?) {
+//                super.onLocationAvailability(p0)
+//                Log.d(TAG, "onLocationAvailability: ")
+//            }
+//        }
+//
+//        // getting location request
+//        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+//    }
 
-        // creating request
-        locationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(20 * 1000.toLong())
-                .setMaxWaitTime(20*2*1000.toLong())
-                .setFastestInterval(20 * 1000.toLong())
-                .setNumUpdates(4)
-
-        isLocatRecieved = false
-
-        // creating callback
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                super.onLocationResult(locationResult)
-                if (locationResult != null) {
-                    locationsList.add(locationResult)
-
-                    altList.add(locationResult.lastLocation.altitude.toFloat())
-                    
-                    if (locationCount > 2) {
-                        Log.d(TAG, "onLocationResult: ")
-                        val altListPerf = mutableListOf<Float>()
-
-                        for(altitute in altList) {
-                            Log.d(TAG, "onLocationResult: alt= " + altitute)
-                            if (altitute > 1.0f && (altitute-lastAlt) < 60.0f) {
-                                altListPerf.add(altitute)
-                            }
-                        }
-
-                        var sumAlt = 0.0f
-                        for (altitude in altListPerf) {
-                            sumAlt += altitude
-                        }
-
-                        val com = sumAlt/altListPerf.size.toFloat()
-
-                        isLocatRecieved = true
-
-                        lastAlt = com
-
-                        locationCount = 0
-                        fusedLocationClient.removeLocationUpdates(locationCallback)
-
-                        ioScope.launch {
-                            zipper.generateAltit(com)
-//                            zipper.generObserv()
-                            registerListn()
-                        }
-                    }
-                    
-                    Log.d(TAG, "onLocationResult: count=" + locationCount)
-                    locationCount ++
-                    var tempalt = locationResult.lastLocation.altitude.toFloat()
-                    if (tempalt > 0.0f || locationCount > 5) {
-                        if (tempalt == 0.0f) {
-                            tempalt = lastAlt
-                            Log.d(TAG, "onLocationResult: old val")
-                        } else {
-                            Log.d(TAG, "onLocationResult: new val")
-                        }
-                    }
-
-                } else {
-                    Log.d(TAG, "onLocationResult: location is null")
-                }
-                //Location received
-            }
-
-            override fun onLocationAvailability(p0: LocationAvailability?) {
-                super.onLocationAvailability(p0)
-                Log.d(TAG, "onLocationAvailability: ")
-            }
-        }
-        
-        // getting location request
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-    }
-
-    private fun saveFakeLastLocationValue() {
+    private fun saveFakeLastLocationValue(): Float {
         Log.d(TAG, "saveFakeLastLocationValue: ")
         var alt = 0.0f
         if (isWorkTime()) {
             alt = WORK_ALT
+            return alt
         } else if (isHomeTime()) {
             alt = HOME_ALT
+            return alt
+        } else {
+            alt = 150.0f
+            return alt
         }
-        ioScope.launch {
-            zipper.generateAltit(alt)
-            zipper.generObserv()
-        }
+//        ioScope.launch {
+//            zipper.generateAltit(alt)
+//            zipper.generObserv()
+//        }
     }
 
 }

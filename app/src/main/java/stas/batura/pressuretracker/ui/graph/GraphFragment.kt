@@ -164,15 +164,6 @@ class GraphFragment: Fragment() {
                 graph.removeAllSeries()
                 val newList = shiftTime(it)
                 drawOld(newList, getRainList(newList))
-
-
-//                val lines = prepareData(it)
-//                for(line in lines) {
-//                    drawLine(line)
-//                }
-//                graph.rootView
-//                graph.viewport.isScalable = true
-//                graph.viewport.setScalableY(true)
             }
 
         })
@@ -330,7 +321,7 @@ class GraphFragment: Fragment() {
 //            val firstTime = list.get(0).time
             for (pressure in list) {
                 val timeMin = ((pressure.time)/(1000*60))
-                val data = DataPoint(timeMin.toDouble(), getNullAltPressure(pressure.pressure, pressure.altitude))
+                val data = DataPoint(timeMin.toDouble(), pressure.pressure*0.750064f.toDouble())
                 listM.add(data)
             }
         }
