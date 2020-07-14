@@ -22,6 +22,7 @@
         android:name="stas.batura.pressuretracker.ui.main.MainFragment"
         android:label="PlaylistFragment"
         tools:layout="@layout/pressure_fragment"
+
         >
         <action
             android:id="@+id/action_listFragment_to_graphFragment"

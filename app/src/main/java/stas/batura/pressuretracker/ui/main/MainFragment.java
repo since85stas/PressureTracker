@@ -1,5 +1,6 @@
 package stas.batura.pressuretracker.ui.main;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -86,6 +87,8 @@ public class MainFragment extends Fragment {
         removeObservers();
     }
 
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -114,6 +117,17 @@ public class MainFragment extends Fragment {
 
             }
         });
+
+        // This callback will only be called when MyFragment is at least Started.
+        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                Navigation.findNavController(view).navigate(R.id.action_listFragment_to_graphFragment);
+            }
+        };
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(callback);
+
     }
 
     /**
