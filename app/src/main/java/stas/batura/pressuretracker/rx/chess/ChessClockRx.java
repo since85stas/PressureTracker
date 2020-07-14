@@ -13,11 +13,7 @@ public class ChessClockRx {
 
     public static final String TAG = "ChessClockRx";
 
-    long[] timeIntervals;
-
     long interval;
-
-    long timeFrom = 0;
 
     boolean isRunning = false;
 
@@ -29,7 +25,6 @@ public class ChessClockRx {
         this.interval = interval;
         this.listner = listner;
         rxChessTimer();
-
     }
 
     public void rxChessTimer() {
@@ -37,9 +32,9 @@ public class ChessClockRx {
             isRunning = true;
             mSubscription = initChessClockObserver().
                     subscribeOn(Schedulers.io()).
-                    observeOn(AndroidSchedulers.mainThread()).
+//                    observeOn(AndroidSchedulers.mainThread()).
                     onBackpressureBuffer().
-                    subscribe(new ChessClockSubscriberBold(listner,interval));
+                    subscribe(new ChessClockSubscriberBold(listner, interval, this));
         } else {
             isRunning = false;
             mSubscription.unsubscribe();
@@ -47,10 +42,6 @@ public class ChessClockRx {
     }
 
     private Observable<Long> initChessClockObserver() {
-
-        long fullTime = 0;
-
-        final long end = fullTime;
 
         Observable<Long> obs = Observable.interval(10, TimeUnit.SECONDS).
                 map(i -> i*10)
@@ -63,6 +54,11 @@ public class ChessClockRx {
     public void stopTimer() {
         logOnCompleted();
         mSubscription.unsubscribe();
+    }
+
+    public void recreate() {
+        isRunning = false;
+        rxChessTimer();
     }
 
     private void logOnCompleted() {

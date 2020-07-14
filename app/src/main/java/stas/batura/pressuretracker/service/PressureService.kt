@@ -142,6 +142,11 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         Log.d(TAG, "onCreate: service")
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand: ")
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
                 Log.d(TAG, "servise is bind " + intent.toString())
@@ -242,7 +247,11 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * creates a new clock object
      */
     private fun createClock() {
-        chessClockRx = ChessClockRx(INTERVAL, this);
+//        if (chessClockRx != null ) {
+//            chessClockRx.stopTimer()
+//        }
+        chessClockRx = ChessClockRx(INTERVAL, this)
+        Log.d(TAG, "createClock: " + chessClockRx.toString())
     }
 
     /**
@@ -256,7 +265,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * recieving a time from clock
      */
     override fun timeChange(time: Long) {
-        Log.d(TAG, "timeChange: " + time)
+        val formatter = SimpleDateFormat("HH:mm:ss");
+        val dateString = formatter.format( Calendar.getInstance().timeInMillis );
+        Log.d(TAG, "timeChange: " + time + " " + dateString)
         if (time == 0L) {
             if (true) {
                 combineData()
@@ -281,7 +292,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      */
     override fun timeFinish() {
         Log.d(TAG, "timeFinish: ")
-        createClock()
+//        createClock()
     }
 
     /**

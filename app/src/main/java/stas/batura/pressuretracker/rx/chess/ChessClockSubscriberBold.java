@@ -12,17 +12,18 @@ public class ChessClockSubscriberBold extends Subscriber<Long> {
 
     long interval;
 
-    long saved;
+    ChessClockRx observable;
 
-    int count = 0;
+    long saved;
 
     public static final String TAG = ChessClockSubscriberBold.class.getName();
 
 
-    public ChessClockSubscriberBold(ChessStateChageListner listner, long interval) {
+    public ChessClockSubscriberBold(ChessStateChageListner listner, long interval, ChessClockRx observable) {
         super();
         mListner = listner;
         this.interval = interval;
+        this.observable = observable;
         Log.d(TAG, "onstart: ");
     }
 
@@ -34,18 +35,18 @@ public class ChessClockSubscriberBold extends Subscriber<Long> {
 
     @Override
     public void onError(Throwable e) {
-
+        stopTimer();
         Log.d(TAG, "onError: ");
     }
 
     private void stopTimer() {
         mListner.timeFinish();
+        observable.recreate();
         unsubscribe();
     }
 
     @Override
     public void onNext(Long aLong) {
-        saved = aLong;
         mListner.timeChange(aLong);
 //        if ( aLong >= count * interval ) {
 ////            int interval = count ;

@@ -70,7 +70,7 @@ fun getCurrentDayEnd(calendar: Calendar): Calendar {
 
 fun getTimeInHours(time: Int): Float {
     val timeMin = time / (1000.0*60.0)
-    val timeHours = timeMin/(24.0)
+    val timeHours = timeMin
     return timeHours.toFloat()
 }
 
