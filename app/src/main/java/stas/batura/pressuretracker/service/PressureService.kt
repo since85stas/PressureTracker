@@ -354,7 +354,7 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name: CharSequence = "name"
             val description = "descr"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
             channel.enableVibration(false)

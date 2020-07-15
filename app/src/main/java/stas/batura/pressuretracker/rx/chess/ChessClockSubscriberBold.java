@@ -43,6 +43,8 @@ public class ChessClockSubscriberBold extends Subscriber<Long> {
         mListner.timeFinish();
         observable.recreate();
         unsubscribe();
+        observable = null;
+        mListner = null;
     }
 
     @Override

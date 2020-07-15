@@ -71,9 +71,14 @@ class GraphFragment: Fragment() {
         isStarted = true
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
     override fun onStop() {
         super.onStop()
         removeObservers()
+        isStarted = false
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
