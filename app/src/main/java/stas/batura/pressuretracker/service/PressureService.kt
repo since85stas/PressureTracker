@@ -147,6 +147,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         return super.onStartCommand(intent, flags, startId)
     }
 
+    /**
+     * binding service to activirty
+     */
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
                 Log.d(TAG, "servise is bind " + intent.toString())
@@ -154,6 +157,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         return PressureServiceBinder()
     }
 
+    /**
+     * unbinding service to activirty
+     */
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "servise is unbind " + intent.toString())
         this.PressureServiceBinder().isBind = false
@@ -438,6 +444,9 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         getCurrentDayEnd(lastDayBegin).timeInMillis).removeObservers(this)
     }
 
+    /**
+     * fun for test writing into file
+     */
     fun testWriteFile() {
         getPressrsForLastday()
     }
