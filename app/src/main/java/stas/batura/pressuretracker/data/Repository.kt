@@ -48,6 +48,10 @@ class Repository @Inject constructor(): IRep {
         return pressureData.getPressuresLive()
     }
 
+    override fun getPressuresLiveDay(): LiveData<List<Pressure>> {
+        return pressureData.getPressuresLiveDay()
+    }
+
     override fun getPressures(): List<Pressure> {
         return pressureData.getPressures()
     }

@@ -84,17 +84,18 @@ class GraphFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        graph.gridLabelRenderer.labelFormatter = object : DefaultLabelFormatter() {
-//            override fun formatLabel(value: Double, isValueX: Boolean): String {
-//                return if (isValueX) {
-//                    // show normal x values
-//                    ""
-//                } else {
-//                    // show currency for y values
-//                    super.formatLabel(value, isValueX)
-//                }
-//            }
-//        }
+        graph.gridLabelRenderer.labelFormatter = object : DefaultLabelFormatter() {
+            override fun formatLabel(value: Double, isValueX: Boolean): String {
+                return if (isValueX) {
+                    // show normal x values
+//                     (value/60 - 24).toInt().toString()
+                    ""
+                } else {
+                    // show currency for y values
+                    super.formatLabel(value, isValueX)
+                }
+            }
+        }
 
         radioGroup = view.findViewById<RadioGroup>(R.id.radio_group)
 
@@ -106,7 +107,7 @@ class GraphFragment: Fragment() {
                         graphViewModel.saveRainPower(0)
                         mainViewModel.setServiceRain(0)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_1 -> {
@@ -114,14 +115,14 @@ class GraphFragment: Fragment() {
                         graphViewModel.saveRainPower(1)
                         mainViewModel.setServiceRain(1)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_2 -> {
                         graphViewModel.saveRainPower(2)
                         mainViewModel.setServiceRain(2)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_3 -> {
@@ -129,7 +130,7 @@ class GraphFragment: Fragment() {
                         graphViewModel.saveRainPower(3)
                         mainViewModel.setServiceRain(3)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_4 -> {
@@ -137,7 +138,7 @@ class GraphFragment: Fragment() {
                         graphViewModel.saveRainPower(4)
                         mainViewModel.setServiceRain(4)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
                 R.id.rain_5 -> {
@@ -145,7 +146,7 @@ class GraphFragment: Fragment() {
                         graphViewModel.saveRainPower(5)
                         mainViewModel.setServiceRain(5)
                     if (isStarted) {
-                        mainViewModel.savePressureValue()
+//                        mainViewModel.savePressureValue()
                     }
                 }
             }
@@ -167,10 +168,18 @@ class GraphFragment: Fragment() {
             if (it != null) {
 
                 graph.removeAllSeries()
-                val newList = shiftTime(it)
+                val newList = shiftTime(it.reversed())
                 drawOld(newList, getRainList(newList))
             }
 
+        })
+
+        mainViewModel.lastDayPressures.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                graph.removeAllSeries()
+                val newList = shiftTime(it)
+                drawOld(newList, getRainList(newList))
+            }
         })
     }
 

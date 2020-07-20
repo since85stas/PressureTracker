@@ -16,6 +16,9 @@ interface PressureDao {
     @Query("SELECT * FROM pressure_table ORDER BY pressureId")
     fun getPressuresLive(): LiveData<List<Pressure>>
 
+    @Query("SELECT * FROM pressure_table ORDER BY pressureId DESC LIMIT 280")
+    fun getPressuresLiveDay(): LiveData<List<Pressure>>
+
     @Query("SELECT * FROM pressure_table ORDER BY pressureId")
     fun getPressures(): List<Pressure>
 

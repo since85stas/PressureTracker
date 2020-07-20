@@ -411,6 +411,10 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
         fun testRx() {
 //            this@PressureService.testRx()
         }
+
+        fun getLastDayBeg(): Calendar {
+            return this@PressureService.lastDayBegin
+        }
     }
 
     /**

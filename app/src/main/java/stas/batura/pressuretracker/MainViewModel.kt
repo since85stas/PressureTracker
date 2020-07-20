@@ -13,12 +13,16 @@ import ru.batura.stat.batchat.repository.room.PressureDao
 import stas.batura.pressuretracker.data.IRep
 import stas.batura.pressuretracker.data.room.Pressure
 import stas.batura.pressuretracker.service.PressureService
+import stas.batura.pressuretracker.utils.getCurrentDayEnd
+import java.util.*
 
 class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewModel() {
 
     private val TAG = MainViewModel::class.simpleName
 
     var serviceConnection: MutableLiveData<ServiceConnection?> = MutableLiveData()
+
+    var lastDayPressures: MutableLiveData<List<Pressure>?> = MutableLiveData(null)
 
     private var playerServiceBinder: PressureService.PressureServiceBinder? = null
 
@@ -96,6 +100,13 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
         }
     }
 
+    fun getLastDayData(): Calendar? {
+        if (playerServiceBinder != null) {
+            return playerServiceBinder!!.getLastDayBeg()
+        }
+        return null
+    }
+
     fun testSave() {
         if (playerServiceBinder != null) {
             playerServiceBinder!!.testWrite()
@@ -117,6 +128,15 @@ class MainViewModel @ViewModelInject constructor(val repository: IRep) : ViewMod
     fun updateNotif() {
         if (playerServiceBinder != null) {
             playerServiceBinder!!.updateNotif()
+        }
+    }
+
+    fun getDayPressuresValue() {
+        val day = getLastDayData()
+        if (day != null) {
+            val pressures = repository.getPressuresInInterval(day.timeInMillis,
+                    getCurrentDayEnd(day).timeInMillis)
+            lastDayPressures.value = pressures
         }
     }
 

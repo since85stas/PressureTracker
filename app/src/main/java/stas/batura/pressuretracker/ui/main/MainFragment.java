@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioGroup;
 
+import java.util.Collections;
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -135,13 +136,14 @@ public class MainFragment extends Fragment {
      */
     private void  addObservers() {
 
-        fragmentModel.getPressureLive().observe(getViewLifecycleOwner(), new Observer() {
+        fragmentModel.getPressureLive().observe(getViewLifecycleOwner(), new Observer<List<Pressure>>() {
             @Override
-            public void onChanged(Object o) {
-                Log.d(TAG, "onChanged: " );
-                adapter.submitList((List<Pressure>) o);
+            public void onChanged(List<Pressure> pressures) {
+                Collections.reverse(pressures);
+                adapter.submitList(pressures);
             }
         });
+    }
 
 //        fragmentModel.getLastPower().observe(getViewLifecycleOwner(), new Observer<Rain>() {
 //            @Override
@@ -157,7 +159,6 @@ public class MainFragment extends Fragment {
 //            }
 //        });
 
-    }
 
     private void movetoGraphFragm() {
 

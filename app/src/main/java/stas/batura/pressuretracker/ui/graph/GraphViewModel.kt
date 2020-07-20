@@ -7,7 +7,7 @@ import stas.batura.pressuretracker.data.IRep
 class GraphViewModel @ViewModelInject constructor(private var repository: IRep) : ViewModel() {
 
 //    val pressList = repository.getPressures()
-    val pressList = repository.getPressuresLive()
+    val pressList = repository.getPressuresLiveDay()
 
     var lastPress = repository.getRainPower()
 

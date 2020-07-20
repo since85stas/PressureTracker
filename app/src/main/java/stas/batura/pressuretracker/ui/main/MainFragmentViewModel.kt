@@ -6,7 +6,7 @@ import stas.batura.pressuretracker.data.IRep
 
 class MainFragmentViewModel @ViewModelInject constructor(val repository: IRep) : ViewModel() {
 
-    val pressureLive = repository.getPressuresLive()
+    val pressureLive = repository.getPressuresLiveDay()
 
     val lastPress = repository.getRainPower()
 
