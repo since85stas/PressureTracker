@@ -70,6 +70,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
     // interval between saves in seconds
     private val INTERVAL = 60L * 5
 
+    private var timeCount: Long = -10L
+
     @Inject lateinit var sensorManager: SensorManager
 
     @Inject lateinit var repository: IRep
@@ -271,10 +273,11 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
      * recieving a time from clock
      */
     override fun timeChange(time: Long) {
+        timeCount += 10L
         val formatter = SimpleDateFormat("HH:mm:ss");
         val dateString = formatter.format( Calendar.getInstance().timeInMillis );
         Log.d(TAG, "timeChange: " + time + " " + dateString)
-        if (time == 0L) {
+        if (timeCount == 0L) {
             if (true) {
                 combineData()
                 if (checkNextDay()) {
@@ -283,6 +286,8 @@ class PressureService @Inject constructor(): LifecycleService(), SensorEventList
             } else {
                 Log.d(TAG, "timeChange: saving off")
             }
+        } else if (timeCount == INTERVAL - 10L) {
+            timeCount = -10L
         }
     }
 

@@ -41,7 +41,7 @@ public class ChessClockSubscriberBold extends Subscriber<Long> {
 
     private void stopTimer() {
         mListner.timeFinish();
-        observable.recreate();
+//        observable.recreate();
         unsubscribe();
         observable = null;
         mListner = null;

@@ -43,9 +43,8 @@ public class ChessClockRx {
 
     private Observable<Long> initChessClockObserver() {
 
-        Observable<Long> obs = Observable.interval(10, TimeUnit.SECONDS).
-                map(i -> i*10)
-                .takeUntil(i -> i > interval-10)
+        Observable<Long> obs = Observable.interval(10, TimeUnit.SECONDS)
+//                map(i -> i*10)
                 ;
 
         return obs;
